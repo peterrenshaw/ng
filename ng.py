@@ -40,6 +40,8 @@ class Nextgen:
         self.ext = ["md","markdown","txt"]
         self.filepath = []
         self.post = []
+        self.is_raw = True
+        self.yaml = []
     # directories
     def directory(self, file_dir=""):
         """valid directory or F"""
@@ -82,6 +84,33 @@ class Nextgen:
                f.close()
 
         return False
+    # read, extract
+    # TODO: optomise - find better way
+    def extract_yaml(self, data):
+        """extract from list, yaml or F"""
+        lines = data.split("\n")
+        yaml_start = False
+        yaml_end = False
+        yaml = []
+        count = 0
+        for line in lines:
+            if line == '---':
+                yaml_start = True
+                count += 1
+            if yaml_start:
+                if line != '---':
+                    data = line.split(":")
+                    if data:
+                        yaml.append({data[0]:data[1]})
+                else:
+                    if count > 1:
+                        yaml_end = True
+            if yaml_end:
+                break
+        if len(yaml) > 0:
+            return yaml
+        else:
+            return False
     def read(self, file_dir=""):
         """read source directory & slurp up filenames"""
         # load source file directory 
@@ -99,7 +128,7 @@ class Nextgen:
 
                 # returns list of filepaths
                 # <http://www.diveinto.org/python3/comprehensions.html#os>
-                fpn =  [os.path.realpath(f) for f in glob.glob(gfp)]
+                fpn = [os.path.realpath(f) for f in glob.glob(gfp)]
                 if fpn: 
                     self.filepath = fpn
 
@@ -108,10 +137,18 @@ class Nextgen:
                 data = ""
                 for fpn in self.filepath:
                     data = self.read_file(fpn)
+
+                    # extract yaml 
+                    self.yaml = self.extract_yaml(data)
+
+                    # list to dict
+                    # ???
+
                     if data:
                         t = datetime.datetime.utcnow()
                         dt = time.mktime(t.timetuple())
 
+                        # build dict of post data
                         p = dict(contents=data,
                                  filepath=fpn,
                                  datetime=dt)
@@ -120,6 +157,9 @@ class Nextgen:
 
         return False
     # processing
+    def is_processed(self):
+        """status of processing, set when completed processing, T/F"""
+        return self.is_raw
     def process(self):
         """process source files into datastructure"""
         pass
@@ -153,10 +193,19 @@ def main():
                     ng.source(options.source_directory)
                     ng.read()
                     p = ng.file_paths()
+                    print("%s paths" % len(p))
                     for f in p:
                         print("\t%s" % f)
                     print("destination <%s>" % options.destination_directory)
-                    print(ng.post)
+                    print("%s post" % len(ng.post))
+                    #for p in ng.post:
+                    #    print(p)
+                    #    print("\n")
+                    if ng.yaml:
+                        print("%s yaml" % len(ng.yaml))
+                        print(ng.yaml)
+                    else:
+                        print("no yaml")
                 else:
                     print("error: must supply a valid <destination directory>")
                     print("\t<%s>" % options.destination_directory)

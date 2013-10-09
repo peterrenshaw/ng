@@ -1,3 +1,11 @@
+---
+displayed:true
+title:This-design
+description:This is a simple design document using the design document as an example
+tags:yaml design ng blog static html html5
+markdown:false
+---
+
 todays hack
 
 abstract:
