@@ -74,6 +74,7 @@ class Nextgen:
         """read file contents or F"""
         if os.path.isfile(filename):
            data = ""
+           f = None
            try: 
                with open(filename, encoding='utf-8') as f:
                    data = f.read()
@@ -81,13 +82,14 @@ class Nextgen:
                return data
            except:
                data = ""
-               f.close()
-
+               if f: f.close()
         return False
     # read, extract
     # TODO: optomise - find a better way
     def extract_yaml(self, data):
         """extract from list, yaml or F"""
+        if not data:
+            return False
         lines = data.split("\n")
         yaml_start = False
         yaml_end = False
@@ -120,6 +122,27 @@ class Nextgen:
                 ytags.append(tag)
             return ytags
         return False
+    def extract_yaml_date(self, date):
+        """extact date into dict or F"""
+        if date:
+            month = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06',
+                     'JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
+            if len(date) == len("YYYYMMMDDTHHMM"):
+                if date[9] == 'T':
+                    yyyy = date[0:4]
+                    mmm = date[4:7]
+                    mon = month[mmm]
+                    dd = date[7:9]
+                    hh = date[10:12]
+                    mm = date[12:14]
+                    return dict(year = yyyy,
+                                month_mm = mon,  # return mm
+                                month_mmm = mmm,
+                                day = dd,
+                                hour = hh,
+                                minute = mm)
+        return False
+    # read files
     def read(self, file_dir=""):
         """read source directory & slurp up filenames"""
         # load source file directory 
@@ -141,52 +164,82 @@ class Nextgen:
                 if fpn: 
                     self.filepath = fpn
 
+            # only if there's a file
             if self.filepath:
                 # we have the filename, now the contents
                 data = ""
                 for fpn in self.filepath:
                     data = self.read_file(fpn)
-
-                    # extract yaml
-                    tags = ""
-                    title = ""
-                    description = ""
-                    is_markdown = False
-                    is_displayed = False
-                    self.yaml = self.extract_yaml(data)
-                    for yaml in self.yaml:
-                        # tags
-                        if 'tags' in yaml:
-                           tags = self.extract_yaml_tags(yaml['tags'])
-                        # title
-                        if 'title' in yaml:
-                           title = yaml['title'].replace("-"," ")
-                        # description
-                        if 'description' in yaml:
-                           description = yaml['description']
-                        # markdown
-                        if 'markdown' in yaml:
-                           is_markdown = yaml['markdown']
-                        # displayed
-                        if 'displayed' in yaml:
-                           is_displayed = yaml['displayed']
-
                     if data:
-                        t = datetime.datetime.utcnow()
-                        dt = time.mktime(t.timetuple())
+                        # yaml
+                        tags = ""
+                        title = ""
+                        description = ""
+                        date = ""
+                        is_markdown = False
+                        is_displayed = False
+
+                        # extract yaml
+                        self.yaml = self.extract_yaml(data)
+                        if self.yaml:
+                            for yaml in self.yaml:
+                                # tags
+                                if 'tags' in yaml:
+                                    tags = self.extract_yaml_tags(yaml['tags'])
+                                # title
+                                if 'title' in yaml:
+                                    title = yaml['title'].replace("-"," ") # strip for display
+                                # description
+                                if 'description' in yaml:
+                                    description = yaml['description']
+                                # markdown
+                                if 'markdown' in yaml:
+                                    is_markdown = yaml['markdown']
+                                # displayed
+                                if 'displayed' in yaml:
+                                    is_displayed = yaml['displayed']
+                                if 'date' in yaml:
+                                    date = yaml['date']
+
+                        # --- build list of file data --- 
+                        # yaml date found?
+                        if date:
+                            dt = self.extract_yaml_date(date)
+                            year = dt['year']
+                            month_mm = dt['month_mm']
+                            month_mmm = dt['month_mmm']
+                            day = dt['day']
+                            hour = dt['hour']
+                            minute = dt['hour']
+                        else:
+                            t = datetime.datetime.utcnow()
+                            dt = time.mktime(t.timetuple())
+                            year = ""
+                            month_mm = ""
+                            month_mmm = ""
+                            day = ""
+                            hour = ""
+                            minute = ""
 
                         # build dict of post data
                         p = dict(contents=data,
                                  filepath=fpn,
                                  datetime=dt,
+                                 year=year,
+                                 month_mmm=month_mmm,
+                                 month_mm=month_mm,
+                                 day=day,
+                                 hour=hour,
+                                 minute=minute,
                                  tags=tags,
                                  title=title,
+                                 ext='html',
                                  description=description,
                                  markdown=is_markdown,
                                  displayed=is_displayed)
                         self.post.append(p)
-                return True
-
+                        # --- build list of file data --- 
+                if self.post: return True
         return False
     # processing
     def is_processed(self):
@@ -194,7 +247,44 @@ class Nextgen:
         return self.is_raw
     def process(self):
         """process source files into datastructure"""
-        pass
+        if self.post:
+            for post in self.post:
+                print(post)
+                # file
+                basepath = self.destination_dir
+                filename = post['title']
+                ext = post['ext']
+
+                # directory
+                dir_year = post['year']
+                dir_month = post['month_mm']
+                dir_day = post['day']
+
+                # flags
+                is_markdown = post['markdown']
+                displayed = post['displayed']
+
+                if is_markdown:
+                    data = "" # process markdown
+                else:
+                    data = ""
+                
+                # --- unroll process list building ---
+                # build each directory and index page in each index pointing
+                # to child files. 
+                
+                # directories
+                dyyyy = os.path.join(basepath, dir_year)
+                dyyyy_mmm = os.path.join(basepath, dir_year, dir_month)
+                dyyyy_mmm_dd = os.path.join(basepath, dir_year, dir_month, dir_day)
+                print(dyyyy)
+                print(dyyyy_mmm)
+                print(dyyyy_mmm_dd)
+                # save content
+                
+                # check file, ok, move along
+                
+        return False
 
 
 
@@ -240,6 +330,10 @@ def main():
                     for p in ng.post:
                         print(p)
                         print("\n")
+      
+                    print("process")
+                    ng.process()
+
                 else:
                     print("error: must supply a valid <destination directory>")
                     print("\t<%s>" % options.destination_directory)
@@ -256,6 +350,8 @@ def main():
         parser.print_help()
         print("\nerror: must supply a <source directory>")
         sys.exit(1)
+
+
 #---
 # main app entry point
 #--- 

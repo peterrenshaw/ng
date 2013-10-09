@@ -44,9 +44,29 @@ class TestNg(unittest.TestCase):
         self.n.source(self.source_dir)
         self.n.read()
         self.assertTrue(len(self.n.filepath) > 0)
+    def test_ng_filepath_fail(self):
+        pass
 
-    # destination
-    
+    # yaml
+    def test_extract_yaml_ok(self):
+        pass
+    def test_extract_yaml_fail(self):
+        pass
+    def test_extract_yaml_tags_ok(self):
+        pass
+    def test_extract_yaml_tags_fail(self):
+        pass
+    def test_extract_yaml_date_ok(self):
+        pass
+    def test_extract_yaml_date_fail(self):
+        pass
+    # read
+    def test_read_ok(self):
+        # valid directory, not file!!!
+        d = os.path.join(self.source_dir)
+        self.assertTrue(self.n.read(d))
+    def test_read_fail(self):
+        self.assertFalse(self.n.read(""))
 
     # process
 #---
@@ -56,7 +76,16 @@ def suite():
     """tests added to run in 'test_all.py'"""
     tests = ['test_ng_init',
              'test_ng_source_ok',
-             'test_ng_source_fail']
+             'test_ng_source_fail',
+             'test_ng_read_ok',
+             'test_ng_read_fail',
+             'test_ng_filepath_ok',
+             'test_extract_yaml_ok',
+             'test_extract_yaml_fail',
+             'test_extract_yaml_tags_ok',
+             'test_extract_yaml_tags_fail',
+             'test_extract_yaml_date_ok',
+             'test_extract_yaml_date_fail']
 
     return unittest.TestSuite(map(TestNg, tests))
 
