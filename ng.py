@@ -85,7 +85,7 @@ class Nextgen:
 
         return False
     # read, extract
-    # TODO: optomise - find better way
+    # TODO: optomise - find a better way
     def extract_yaml(self, data):
         """extract from list, yaml or F"""
         lines = data.split("\n")
@@ -99,8 +99,8 @@ class Nextgen:
                 count += 1
             if yaml_start:
                 if line != '---':
-                    data = line.split(":")
-                    if data:
+                    if line: 
+                        data = line.split(":")
                         yaml.append({data[0]:data[1]})
                 else:
                     if count > 1:
@@ -111,6 +111,15 @@ class Nextgen:
             return yaml
         else:
             return False
+    def extract_yaml_tags(self, tags):
+        """extract from yaml['tags'], split by space and return as list OR F"""
+        ytags = []
+        if tags:
+            tags = tags.split(" ")
+            for tag in tags:
+                ytags.append(tag)
+            return ytags
+        return False
     def read(self, file_dir=""):
         """read source directory & slurp up filenames"""
         # load source file directory 
@@ -138,11 +147,29 @@ class Nextgen:
                 for fpn in self.filepath:
                     data = self.read_file(fpn)
 
-                    # extract yaml 
+                    # extract yaml
+                    tags = ""
+                    title = ""
+                    description = ""
+                    is_markdown = False
+                    is_displayed = False
                     self.yaml = self.extract_yaml(data)
-
-                    # list to dict
-                    # ???
+                    for yaml in self.yaml:
+                        # tags
+                        if 'tags' in yaml:
+                           tags = self.extract_yaml_tags(yaml['tags'])
+                        # title
+                        if 'title' in yaml:
+                           title = yaml['title'].replace("-"," ")
+                        # description
+                        if 'description' in yaml:
+                           description = yaml['description']
+                        # markdown
+                        if 'markdown' in yaml:
+                           is_markdown = yaml['markdown']
+                        # displayed
+                        if 'displayed' in yaml:
+                           is_displayed = yaml['displayed']
 
                     if data:
                         t = datetime.datetime.utcnow()
@@ -151,7 +178,12 @@ class Nextgen:
                         # build dict of post data
                         p = dict(contents=data,
                                  filepath=fpn,
-                                 datetime=dt)
+                                 datetime=dt,
+                                 tags=tags,
+                                 title=title,
+                                 description=description,
+                                 markdown=is_markdown,
+                                 displayed=is_displayed)
                         self.post.append(p)
                 return True
 
@@ -197,15 +229,17 @@ def main():
                     for f in p:
                         print("\t%s" % f)
                     print("destination <%s>" % options.destination_directory)
-                    print("%s post" % len(ng.post))
-                    #for p in ng.post:
-                    #    print(p)
-                    #    print("\n")
+                    print("yaml")
                     if ng.yaml:
                         print("%s yaml" % len(ng.yaml))
                         print(ng.yaml)
                     else:
                         print("no yaml")
+
+                    print("%s post" % len(ng.post))
+                    for p in ng.post:
+                        print(p)
+                        print("\n")
                 else:
                     print("error: must supply a valid <destination directory>")
                     print("\t<%s>" % options.destination_directory)
