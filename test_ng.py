@@ -45,6 +45,10 @@ class TestNg(unittest.TestCase):
         self.n.read()
         self.assertTrue(len(self.n.filepath) > 0)
 
+    # destination
+    
+
+    # process
 #---
 # suite: allows all tests run here to be run externally at 'test_all.py'
 #---
