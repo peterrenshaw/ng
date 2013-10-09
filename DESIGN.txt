@@ -11,6 +11,11 @@ todo
     * output
     * switches
 
+Requirements
+
+This baby is a python 3 only engine. Test and enforce this.
+
+
 Data structure
  
 A file is a data structure. The filename is contains the title, the date information. The filetype should
