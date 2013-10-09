@@ -7,7 +7,6 @@
 #---
 
 
-import json
 import os.path
 import unittest
 
@@ -60,6 +59,15 @@ class TestNg(unittest.TestCase):
         pass
     def test_extract_yaml_date_fail(self):
         pass
+    # tags
+    def test_update_tags_ok(self):
+        tag = "today"
+        tags = []
+        self.assertEqual(self.n.update_tags(tag, tags),['today'])
+    def test_update_tags_fail(self):
+        tag = "today"
+        tags = ['today']
+        self.assertEqual(self.n.update_tags(tag, tags),tags)
     # read
     def test_read_ok(self):
         # valid directory, not file!!!
@@ -85,7 +93,9 @@ def suite():
              'test_extract_yaml_tags_ok',
              'test_extract_yaml_tags_fail',
              'test_extract_yaml_date_ok',
-             'test_extract_yaml_date_fail']
+             'test_extract_yaml_date_fail',
+             'test_update_tags_ok',
+             'test_update_tags_fail']
 
     return unittest.TestSuite(map(TestNg, tests))
 

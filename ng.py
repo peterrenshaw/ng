@@ -36,7 +36,7 @@ from optparse import OptionParser
 class Nextgen:
     def __init__(self):
         self.source_dir = ""
-        self.destination_dir = ""
+        self.dest_dir = ""
         self.ext = ["md","markdown","txt"]
         self.filepath = []
         self.post = []
@@ -61,7 +61,7 @@ class Nextgen:
         """valid destination directory or F"""
         fdp = self.directory(file_dir)
         if fdp: 
-            self.destination_dir = fdp
+            self.dest_dir = fdp
             return True
         else:
             return False
@@ -125,23 +125,34 @@ class Nextgen:
     def extract_yaml_date(self, date):
         """extact date into dict or F"""
         if date:
-            month = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06',
-                     'JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
+            month = {'JAN':'01','FEB':'02','MAR':'03','APR':'04',
+                     'MAY':'05','JUN':'06','JUL':'07','AUG':'08',
+                     'SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
             if len(date) == len("YYYYMMMDDTHHMM"):
                 if date[9] == 'T':
                     yyyy = date[0:4]
                     mmm = date[4:7]
-                    mon = month[mmm]
+                    mon = month[mmm]  # OCT to 10
                     dd = date[7:9]
                     hh = date[10:12]
                     mm = date[12:14]
                     return dict(year = yyyy,
-                                month_mm = mon,  # return mm
-                                month_mmm = mmm,
+                                month_mm = mon,  # mm 10
+                                month_mmm = mmm, # mmm OCT
                                 day = dd,
                                 hour = hh,
                                 minute = mm)
         return False
+    # tags
+    def update_tags(self, item, tags):
+        """update tag in tags list - remember, 
+           tag list returns unchanged, even on 
+           failure=
+        """
+        if item:
+            if item not in tags:    # remove duplicates
+                tags.append(item)
+        return tags
     # read files
     def read(self, file_dir=""):
         """read source directory & slurp up filenames"""
@@ -172,7 +183,7 @@ class Nextgen:
                     data = self.read_file(fpn)
                     if data:
                         # yaml
-                        tags = ""
+                        tags = []
                         title = ""
                         description = ""
                         date = ""
@@ -203,15 +214,23 @@ class Nextgen:
 
                         # --- build list of file data --- 
                         # yaml date found?
+                        # TODO add yyyy yyyymm yyyymmm yyyymmdd yyyymmmdd 
                         if date:
                             dt = self.extract_yaml_date(date)
                             year = dt['year']
+                            tags = self.update_tags(year, tags)
                             month_mm = dt['month_mm']
+                            tags = self.update_tags(month_mm, tags)
                             month_mmm = dt['month_mmm']
+                            tags = self.update_tags(month_mmm, tags)
                             day = dt['day']
+                            tags = self.update_tags(day, tags)
                             hour = dt['hour']
+                            tags = self.update_tags(hour, tags)
                             minute = dt['hour']
+                            tags = self.update_tags(minute, tags)
                         else:
+                            # TODO fix no date tags 
                             t = datetime.datetime.utcnow()
                             dt = time.mktime(t.timetuple())
                             year = ""
@@ -220,6 +239,7 @@ class Nextgen:
                             day = ""
                             hour = ""
                             minute = ""
+                        tags.sort()
 
                         # build dict of post data
                         p = dict(contents=data,
@@ -245,19 +265,29 @@ class Nextgen:
     def is_processed(self):
         """status of processing, set when completed processing, T/F"""
         return self.is_raw
-    def process(self):
+    def create_directory(self, path):
+        """create destination directory or F"""
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        else:
+            return False        
+    def process(self, destination_dir):
         """process source files into datastructure"""
+        # we need a valid destination, don't make a directory
+        if os.path.isdir(destination_dir):
+            self.dest_dir = destination_dir
+        else:
+            return False
+
         if self.post:
             for post in self.post:
-                print(post)
                 # file
-                basepath = self.destination_dir
                 filename = post['title']
                 ext = post['ext']
 
                 # directory
                 dir_year = post['year']
-                dir_month = post['month_mm']
+                dir_month = post['month_mmm']    # mm or mmm? give option?
                 dir_day = post['day']
 
                 # flags
@@ -269,22 +299,38 @@ class Nextgen:
                 else:
                     data = ""
                 
+                # dates
+ 
                 # --- unroll process list building ---
                 # build each directory and index page in each index pointing
                 # to child files. 
                 
                 # directories
-                dyyyy = os.path.join(basepath, dir_year)
-                dyyyy_mmm = os.path.join(basepath, dir_year, dir_month)
-                dyyyy_mmm_dd = os.path.join(basepath, dir_year, dir_month, dir_day)
-                print(dyyyy)
-                print(dyyyy_mmm)
-                print(dyyyy_mmm_dd)
+                dyyyy = os.path.join(self.dest_dir, dir_year)
+                dyyyy_mmm = os.path.join(self.dest_dir, dir_year, dir_month)
+                dyyyy_mmm_dd = os.path.join(self.dest_dir, dir_year, dir_month, dir_day)
+                
+                # create directories
+                print("destination <%s>" % self.dest_dir)
+                if self.create_directory(dyyyy):
+                    print("\ts" % dyyyy)
+                else:
+                    print("\t%s" % dyyyy)
+                if self.create_directory(dyyyy_mmm):
+                    print("\t%s" % dyyyy_mmm)
+                else:
+                    print("\t%s" % dyyyy_mmm)
+                if self.create_directory(dyyyy_mmm_dd):
+                    print("\t%s" % dyyyy_mmm_dd)
+                else:
+                    print("\t%s" % dyyyy_mmm_dd)
+
                 # save content
                 
                 # check file, ok, move along
-                
-        return False
+            return True    
+        else:
+            return False
 
 
 
@@ -294,9 +340,9 @@ def main():
     parser = OptionParser(usage)
 
     # --- options --- 
-    parser.add_option("-s", "--source", dest="source_directory",
+    parser.add_option("-s", "--source", dest="src_dir",
                       help="supply source directory to read files from")
-    parser.add_option("-d", "--destination", dest="destination_directory", 
+    parser.add_option("-d", "--destination", dest="dest_dir", 
                       help="supply destination directory to save files too")
     parser.add_option("-v", "--version", dest="version",
                       action="store_true",
@@ -304,21 +350,21 @@ def main():
     options, args = parser.parse_args()
 
     # --- process ---
-    if options.source_directory:
-        if os.path.isdir(options.source_directory):
-            print("source <%s>" % options.source_directory)
-            if options.destination_directory:
-                if os.path.isdir(options.destination_directory):
+    if options.src_dir:
+        if os.path.isdir(options.src_dir):
+            print("source <%s>" % options.src_dir)
+            if options.dest_dir:
+                if os.path.isdir(options.dest_dir):
                     
                     # the business
                     ng = Nextgen()
-                    ng.source(options.source_directory)
+                    ng.source(options.src_dir)
                     ng.read()
                     p = ng.file_paths()
                     print("%s paths" % len(p))
                     for f in p:
                         print("\t%s" % f)
-                    print("destination <%s>" % options.destination_directory)
+                    print("destination <%s>" % options.dest_dir)
                     print("yaml")
                     if ng.yaml:
                         print("%s yaml" % len(ng.yaml))
@@ -332,11 +378,17 @@ def main():
                         print("\n")
       
                     print("process")
-                    ng.process()
+                    if ng.process(options.dest_dir):
+                        print("ok")
+                        
+                    else:
+                        print("error: problems processing")
+                        print("\t<%s>" % options.dest_dir)
+                        sys.exit(1)
 
                 else:
                     print("error: must supply a valid <destination directory>")
-                    print("\t<%s>" % options.destination_directory)
+                    print("\t<%s>" % options.dest_dir)
                     sys.exit(1)
             else:
                     parser.print_help()
@@ -344,7 +396,7 @@ def main():
                     sys.exit(1)                
         else:
             print("error: must supply a valid <source directory>")
-            print("\t<%s>" % options.source_directory)
+            print("\t<%s>" % options.src_dir)
             sys.exit(1)
     else:
         parser.print_help()
