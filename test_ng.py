@@ -17,19 +17,28 @@ import ng
 
 class TestNg(unittest.TestCase):
     def setUp(self):
-        self.ng = ng.Nextgen()
+        self.n = ng.Nextgen()
     def tearDown(self):
-        pass
+        self.n = None
+
 
     def test_ng_init(self):
-        pass
+        self.assertTrue(self.n)
+    def test_ng_source_ok(self):
+        source_dir = os.getcwd()
+        self.assertTrue(self.n.source(source_dir))
+    def test_ng_source_fail(self):
+        self.assertFalse(self.n.source(""))
+        
 
 #---
 # suite: allows all tests run here to be run externally at 'test_all.py'
 #---
 def suite():
     """tests added to run in 'test_all.py'"""
-    tests = ['test_ng_init']
+    tests = ['test_ng_init',
+             'test_ng_source_ok',
+             'test_ng_source_fail']
 
     return unittest.TestSuite(map(TestNg, tests))
 
