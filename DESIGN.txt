@@ -1,0 +1,149 @@
+todays hack
+
+abstract:
+
+    build a fast blog engine, quickly, ie: inside 8hrs.
+
+todo
+
+    * data structure
+    * engine
+    * output
+    * switches
+
+Data structure
+ 
+A file is a data structure. The filename is contains the title, the date information. The filetype should
+be either, '.txt' or '.md' or '.markdown'. 
+
+The file contents should be the following:
+
+    2013OCT09-this-is-foo.md
+    === file start ===
+    ---
+    yaml
+    ---
+
+    Content in utf-8 markdown
+    === file end ===
+
+YAML
+
+    displayed - boolean
+    title - one line, < 80 char
+    description - text < 200 char
+    date - utc in epoch
+    tags - list in line, spaces = break, joins by dash
+    markdown - boolean (otherwise text)
+
+Content
+
+All text is utf-8 and has optional ability to parse markdown.
+
+
+Directory structure
+
+    static
+        purpose is about, contact, etc.
+        filename is static filename in html. ie: filename.html
+        single page with body in text|html (ie marked up) format
+
+    SOURCE
+    ======
+    posts
+        yyyymmmdd-title-of-some-sort.md
+   
+    DESTINATION
+    ===========
+    up
+        img/
+        css/
+        js/
+        static.html  # about | contact | etc.
+        index.html
+        yyyy
+            index.html # links to yyyy/mmm page
+            mmm
+                index.html # links to mmm/dd page
+                dd
+                    index.html # link to titles of articles & abstract only with time stamp
+                    # list of pages for this day
+                    title-of-some-sort.html # from yyyymmmdd-title-of-some-sort.md
+
+
+Internal representation
+
+     posts # list of files ordered by sort
+         dt_order # epoch - this becomes sort index ???
+         filename
+         dt_yyyy_mmm_dd_hh_mm
+         title (remove '-' & replace with space)
+         content (unprocessed markdown)
+         y_title (optional)
+         y_tags  (insert date, title, keywords)
+         y_date  (yyyy,mmm,dd,hh,mm)
+         y_description (200 char only)
+         y_display = False (default)
+         y_markdown = True (default)
+         
+      
+     proccessed
+
+         # build process list
+         for each file in filename list: 
+             # extract order #, filename & extension
+             dt_order
+
+             # destination
+             basepath = destination
+         
+             # extract yaml details as dict
+             y_details = dict of y details if full
+
+             # check if y_title else keep
+             filename = filename + extension
+
+             # break filename + date into bits
+             filename = filename + extentions # check if y_title, else keep
+             dt_yyyy      # year
+             dt_yyyymmm   # year/month
+             dt_yyyymmmdd # year/month/day
+
+             # process content markdown
+             content_markdown = process_markdown(content)
+
+             # build filepaths
+             dirname_year = dt_yyyy # filepath
+             dirname_yearmonth = dt_yyyy + dt_yyyymmm # filepath
+             dirname_yearmonthday = dt_yyyy + dt_yyyymmm + dt_yyyymmmdd # filepath
+
+             # add to lists of directory structs to build
+             year.append(dirname_year)
+             yearmonth.append(dirname_yearmonth)
+             yearmonthday.append({'directory':dirname_yearmonthday, 'filename':filename, 'content': content})
+         
+
+            
+         # --- unroll process list building ---
+         # build each directory and index page in each index pointing
+         # to child files. 
+
+         if valid basepath:
+
+             for file in processed:
+                 # set basepath
+                 # processing ... save file to dirpath
+
+
+Processing
+
+The reality is there is no real processing beyond grabbing files, extracting the useful data
+and processing the guts, if required, to markdown. The header and footer templates and layout 
+has to be done before hand (if at all). There is no template processing here, just plain
+processing. 
+
+Read source directory and slurp in all files (for the moment) and read each file into a
+master data structure. Parse the data structure and spit out individual pages. 
+
+
+
