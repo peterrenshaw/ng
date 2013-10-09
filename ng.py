@@ -15,7 +15,9 @@
 import os
 import sys
 import glob
+import time
 import os.path
+import datetime
 from optparse import OptionParser
 
 
@@ -37,6 +39,7 @@ class Nextgen:
         self.destination_dir = ""
         self.ext = ["md","markdown","txt"]
         self.filepath = []
+        self.post = []
     # directories
     def directory(self, file_dir=""):
         """valid directory or F"""
@@ -65,6 +68,20 @@ class Nextgen:
         """return list of filepaths or F"""
         if len(self.filepath) > 0: return self.filepath
         else: return False
+    def read_file(self, filename):
+        """read file contents or F"""
+        if os.path.isfile(filename):
+           data = ""
+           try: 
+               with open(filename, encoding='utf-8') as f:
+                   data = f.read()
+               f.close()
+               return data
+           except:
+               data = ""
+               f.close()
+
+        return False
     def read(self, file_dir=""):
         """read source directory & slurp up filenames"""
         # load source file directory 
@@ -87,6 +104,18 @@ class Nextgen:
                     self.filepath = fpn
 
             if self.filepath:
+                # we have the filename, now the contents
+                data = ""
+                for fpn in self.filepath:
+                    data = self.read_file(fpn)
+                    if data:
+                        t = datetime.datetime.utcnow()
+                        dt = time.mktime(t.timetuple())
+
+                        p = dict(contents=data,
+                                 filepath=fpn,
+                                 datetime=dt)
+                        self.post.append(p)
                 return True
 
         return False
@@ -127,6 +156,7 @@ def main():
                     for f in p:
                         print("\t%s" % f)
                     print("destination <%s>" % options.destination_directory)
+                    print(ng.post)
                 else:
                     print("error: must supply a valid <destination directory>")
                     print("\t<%s>" % options.destination_directory)
