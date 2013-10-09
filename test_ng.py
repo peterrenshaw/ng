@@ -18,18 +18,32 @@ import ng
 class TestNg(unittest.TestCase):
     def setUp(self):
         self.n = ng.Nextgen()
+        self.source_dir = os.getcwd()
     def tearDown(self):
         self.n = None
 
 
+    # init
     def test_ng_init(self):
         self.assertTrue(self.n)
+
+    # source
     def test_ng_source_ok(self):
-        source_dir = os.getcwd()
-        self.assertTrue(self.n.source(source_dir))
+        self.assertTrue(self.n.source(self.source_dir))
     def test_ng_source_fail(self):
         self.assertFalse(self.n.source(""))
-        
+
+    # read
+    def test_ng_read_ok(self):
+        self.n.source(self.source_dir)
+        self.assertTrue(self.n.read())
+    def test_ng_read_fail(self):
+        self.n.source("")
+        self.assertFalse(self.n.read())
+    def test_ng_filepath_ok(self):
+        self.n.source(self.source_dir)
+        self.n.read()
+        self.assertTrue(len(self.n.filepath) > 0)
 
 #---
 # suite: allows all tests run here to be run externally at 'test_all.py'
