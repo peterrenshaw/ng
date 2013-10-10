@@ -23,45 +23,119 @@ from optparse import OptionParser
 
 # --- time tools start---
 #
-# dt_iso_valid: check  if "YYYY-MM-DDTHH:MM:SS T/F"
-def dt_iso_8601_valid(dts):
-    """break down ISO format string"""
-    if len("YYYY-MM-DDTHH:MM:SS") == len(dts):
-        if dts[4] == "-":
-            if dts[7] == "-":
-                if dts[10] == "T":
-                    if dts[13] == ":":
-                        if dts[16] == ":":
-                             return True
-    return False
-# dt_iso_crack: crack "YYYY-MM-DDTHH:MM:SS"
-#               to     2013 10 10 8 0
-def dt_iso_8601_crack(dts):
-    """break ISO8601 into time components"""
-    year = int(dts[0:4])
-    month = int(dts[5:7])
-    day = int(dts[8:10])
-    hh = int(dts[14:16])
-    mm = int(dts[17:19])
-    return year, month, day, hh, mm
-# dt_str_8601_to_epoch: generates 1381352400.0 from YYYY-MM-DDTHH:MM:SS
-def dt_str_8601_to_epoch(year, month, day, hour, minute):
-    """convert YYYY-MM-DDTHH:MM:SS to epoch"""
-    t = datetime.datetime(year, month, day, hour, minute)
-    return time.mktime(t.timetuple())
-# dt_str_8601_to_date: generates for eg: 2013-10-10
-def dt_str_8601_to_date(year, month, day):
-    """return generates YYYY-MM-DD"""
-    return datetime.date(year, month, day)
-# dt_iso_8601_utc: generates utc: 1381339265.0
-def dt_iso_8601_utc():
-    """return generates utc: 1381339265.0"""
-    t = datetime.datetime.utcnow()
-    return time.mktime(t.timetuple())
-# dt_iso_8601_utc_offset: generates utc+offset 138137865.0
-def dt_iso_8601_utc_offset():
-    t = datetime.datetime.now()
-    return time.mktime(t.timetuple())
+#===
+# name: DateISO8601
+# date: 2013OCT09
+# prog: pr:
+# desc: naive time tool for iso-8601
+#
+# cf:   <http://docs.python.org/2/library/datetime.html>
+# eg:   2013-10-10T14:08:00
+#       YYYY-MM-DDTHH:MM:SS
+# nb:   no now, epoch, utc 
+#       all datetime from str
+#===
+class DateIso8601:
+    def __init__(self, str_iso_8601="", dt=datetime):
+        self.iso = str_iso_8601  # YYYY-MM-DDTHH:MM:SS
+        self.dt = datetime       # passed in date object
+        self.is_valid = False    # is str_iso_8601 valid format?
+        
+        self.year = 0
+        self.month = 0
+        self.month_mm = 0
+        self.month_mmm = ""
+        self.day = 0
+        self.hour = 0
+        self.minute = 0
+        self.seconds = 0
+
+        self.mmm = ['JAN','FEB','MAR','APR', \
+                    'MAY','JUN','JUL','AUG', \
+                    'SEP','OCT','NOV','DEC']
+        self.iso_8601 = "YYYY-MM-DDTHH:MM:SS"
+        self.iso_8601_strf = "%Y-%m-%dT%H:%M:%S"
+        self.iso_8601_date_strf = "%Y-%m-%d"
+
+    def validate(self, str_iso_8601=""):
+        """validate string format to ISO8601 standard"""
+        # test for current or new 
+        if str_iso_8601:
+            iso = str_iso_8601
+        else:
+            iso = self.iso
+        if len(self.iso_8601) == len(iso):
+            if iso[4] == "-":
+                if iso[7] == "-":
+                    if iso[10] == "T":
+                        if iso[13] == ":":
+                            if iso[16] == ":":
+                                 self.iso = iso        # update 
+                                 self.is_valid = True
+                                 return self.is_valid
+        self.is_valid = False
+        return self.is_valid
+    def crack(self, str_iso_8601=""):
+        """break apart string format ISO8601 into time"""
+        # test for supplied or current
+        if str_iso_8601: 
+            iso = str_iso_8601
+            self.validate(iso)
+        else:
+            iso = self.iso
+        if self.is_valid:
+            self.iso = iso
+              #0123456789012345678
+            # "2013-10-10T14:08:00"
+            self.year = int(self.iso[0:4])
+            self.day = int(self.iso[5:7])
+            self.month = int(self.iso[8:10])
+            self.month_mm = int(self.iso[5:7])
+            self.month_mmm = ""
+
+            # convert mm to mmm
+            count = 1
+            for dd in self.mmm:
+                if count == int(self.month_mm):
+                    #print(count, dd, self.mmm[count-1])
+                    self.month_mmm = self.mmm[count-1] # one off error?
+                    break
+                count += 1
+
+            self.hour = int(self.iso[11:13])
+            self.minute = int(self.iso[14:16])
+
+            return self.year, self.month, self.month_mm, \
+                   self.month_mmm, self.day, self.hour, \
+                   self.minute
+        else: 
+            return False
+    def epoch(self):
+        """return ISO6601 as epoch"""
+        if self.is_valid:
+            t = datetime.datetime(self.year, self.month, self.day, 
+                                  self.hour, self.minute)
+            self.epoch = time.mktime(t.timetuple())
+            return self.epoch
+        else:
+            return False
+    def date(self):
+        """returns ISO6601 as YYYY-MM-DD"""
+        if self.is_valid:
+            self.dt_date = datetime.date(self.year, self.month, self.day)
+            return self.dt_date.strftime(self.iso_8601_date_strf)
+        else:
+            return False
+    def now(self):
+        """return datetime now as ISO6601"""
+        # "YYYY-MM-DDTHH:MM:SS"
+        # <http://cpan.uwinnipeg.ca/htdocs/Time-Piece-ISO/Time/Piece/ISO.html>
+        # TODO gmt or local time, ability to specify
+        dt = datetime.datetime.now().strftime(self.iso_8601_strf)
+        if self.validate(dt):
+            return dt
+        else:
+            return False
 #
 # --- end time tools ---
 
@@ -79,7 +153,8 @@ def dt_iso_8601_utc_offset():
 #            ng.process()
 #===
 class Nextgen:
-    def __init__(self):
+    def __init__(self, d8601=DateIso8601()):
+        self.date8601 = d8601
         self.source_dir = ""
         self.dest_dir = ""
         self.ext = ["md","markdown","txt"]
@@ -159,7 +234,10 @@ class Nextgen:
         else:
             return False
     def extract_yaml_tags(self, tags):
-        """extract from yaml['tags'], split by space and return as list OR F"""
+        """
+        extract from yaml['tags'], split by space, 
+        return as list OR F
+        """
         ytags = []
         if tags:
             tags = tags.split(" ")
@@ -168,25 +246,16 @@ class Nextgen:
             return ytags
         return False
     def extract_yaml_date(self, date):
-        """extact date into dict or F"""
-        if date:
-            month = {'JAN':'01','FEB':'02','MAR':'03','APR':'04',
-                     'MAY':'05','JUN':'06','JUL':'07','AUG':'08',
-                     'SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
-            if len(date) == len("YYYYMMMDDTHHMM"):
-                if date[9] == 'T':
-                    yyyy = date[0:4]
-                    mmm = date[4:7]
-                    mon = month[mmm]  # OCT to 10
-                    dd = date[7:9]
-                    hh = date[10:12]
-                    mm = date[12:14]
-                    return dict(year = yyyy,
-                                month_mm = mon,  # mm 10
-                                month_mmm = mmm, # mmm OCT
-                                day = dd,
-                                hour = hh,
-                                minute = mm)
+        """extract date using Date8601"""
+        if self.date8601.validate(date):
+            (year, month, month_mm, month_mmm, day, hour, minute) = self.date8601.crack()
+            return dict(year = year,
+                            month = month,
+                            month_mm = month_mm,  # mm 10
+                            month_mmm = month_mmm, # mmm OCT
+                            day = day,
+                            hour = hour,
+                            minute = minute)
         return False
     # tags
     def update_tags(self, item, tags):
@@ -256,42 +325,37 @@ class Nextgen:
                                     is_displayed = yaml['displayed']
                                 if 'date' in yaml:
                                     date = yaml['date']
+                                else:
+                                    date = self.date8601.now()
 
                         # --- build list of file data --- 
                         # yaml date found?
                         # TODO add yyyy yyyymm yyyymmm yyyymmdd yyyymmmdd
                         #      add epoch to allow sorting by datetime
-                        if date:
-                            dt = self.extract_yaml_date(date)
-                            year = dt['year']
-                            tags = self.update_tags(year, tags)
-                            month_mm = dt['month_mm']
-                            tags = self.update_tags(month_mm, tags)
-                            month_mmm = dt['month_mmm']
-                            tags = self.update_tags(month_mmm, tags)
-                            day = dt['day']
-                            tags = self.update_tags(day, tags)
-                            hour = dt['hour']
-                            tags = self.update_tags(hour, tags)
-                            minute = dt['hour']
-                            tags = self.update_tags(minute, tags)
-                        else:
-                            # TODO fix no date tags 
-                            t = datetime.datetime.utcnow()
-                            dt = time.mktime(t.timetuple())
-                            year = ""
-                            month_mm = ""
-                            month_mmm = ""
-                            day = ""
-                            hour = ""
-                            minute = ""
-                        tags.sort()
+                        dt = self.extract_yaml_date(date)
+
+                        year = dt['year']
+                        month_mm = dt['month_mm']
+                        month = month_mm
+                        month_mmm = dt['month_mmm']
+                        day = dt['day']
+                        hour = dt['hour']
+                        minute = dt['hour']
+                        
+                        # tags
+                        tags = self.update_tags(year, tags)
+                        tags = self.update_tags(month_mm, tags)
+                        tags = self.update_tags(month_mmm, tags)
+                        tags = self.update_tags(day, tags)
+                        tags = self.update_tags(hour, tags)
+                        tags = self.update_tags(minute, tags)
 
                         # --- build dict of post data ---
                         p = dict(contents=data,
                                  filepath=fpn,
                                  datetime=dt,
                                  year=year,
+                                 month=month,
                                  month_mmm=month_mmm,
                                  month_mm=month_mm,
                                  day=day,
@@ -332,9 +396,9 @@ class Nextgen:
                 ext = post['ext']
 
                 # directory
-                dir_year = post['year']
-                dir_month = post['month_mmm']    # mm or mmm? give option?
-                dir_day = post['day']
+                year = post['year']
+                month = post['month_mmm']    # mm or mmm? give option?
+                day = post['day']
 
                 # flags
                 is_markdown = post['markdown']
@@ -352,9 +416,9 @@ class Nextgen:
                 # to child files. 
                 
                 # directories
-                dyyyy = os.path.join(self.dest_dir, dir_year)
-                dyyyy_mmm = os.path.join(self.dest_dir, dir_year, dir_month)
-                dyyyy_mmm_dd = os.path.join(self.dest_dir, dir_year, dir_month, dir_day)
+                dyyyy = os.path.join(self.dest_dir, year)
+                dyyyy_mmm = os.path.join(self.dest_dir, year, month)
+                dyyyy_mmm_dd = os.path.join(self.dest_dir, year, month, day)
                 
                 # create directories
                 print("destination <%s>" % self.dest_dir)
@@ -362,10 +426,12 @@ class Nextgen:
                     print("\ts" % dyyyy)
                 else:
                     print("\t%s" % dyyyy)
+
                 if self.create_directory(dyyyy_mmm):
                     print("\t%s" % dyyyy_mmm)
                 else:
                     print("\t%s" % dyyyy_mmm)
+
                 if self.create_directory(dyyyy_mmm_dd):
                     print("\t%s" % dyyyy_mmm_dd)
                 else:
@@ -401,37 +467,36 @@ def main():
             print("source <%s>" % options.src_dir)
             if options.dest_dir:
                 if os.path.isdir(options.dest_dir):
-                    
                     # the business
-                    ng = Nextgen()
+                    dt = DateIso8601("")
+
+                    ng = Nextgen(dt)
                     ng.source(options.src_dir)
                     ng.read()
+
                     p = ng.file_paths()
-                    print("%s paths" % len(p))
                     for f in p:
                         print("\t%s" % f)
                     print("destination <%s>" % options.dest_dir)
-                    print("yaml")
                     if ng.yaml:
-                        print("%s yaml" % len(ng.yaml))
-                        print(ng.yaml)
+                        print("\t%s yaml" % len(ng.yaml))
                     else:
-                        print("no yaml")
+                        print("\tno yaml")
 
-                    print("%s post" % len(ng.post))
+                    print("\t%s post" % len(ng.post))
                     for p in ng.post:
-                        print(p)
+                        print("\t", p)
                         print("\n")
-      
+
                     print("process")
                     if ng.process(options.dest_dir):
                         print("ok")
-                        
                     else:
                         print("error: problems processing")
                         print("\t<%s>" % options.dest_dir)
                         sys.exit(1)
-
+                    dt = None
+                    ng = None
                 else:
                     print("error: must supply a valid <destination directory>")
                     print("\t<%s>" % options.dest_dir)

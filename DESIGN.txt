@@ -1,6 +1,6 @@
 ---
 displayed:True
-date:2013OCT10T0900
+date:2013-10-10T09:01:01
 title:Hello-World
 description:A simple hello world document to test & do the traditional hello world thing.
 tags:yaml helloworld hello world ng blog static html html5
