@@ -21,6 +21,51 @@ import datetime
 from optparse import OptionParser
 
 
+# --- time tools start---
+#
+# dt_iso_valid: check  if "YYYY-MM-DDTHH:MM:SS T/F"
+def dt_iso_8601_valid(dts):
+    """break down ISO format string"""
+    if len("YYYY-MM-DDTHH:MM:SS") == len(dts):
+        if dts[4] == "-":
+            if dts[7] == "-":
+                if dts[10] == "T":
+                    if dts[13] == ":":
+                        if dts[16] == ":":
+                             return True
+    return False
+# dt_iso_crack: crack "YYYY-MM-DDTHH:MM:SS"
+#               to     2013 10 10 8 0
+def dt_iso_8601_crack(dts):
+    """break ISO8601 into time components"""
+    year = int(dts[0:4])
+    month = int(dts[5:7])
+    day = int(dts[8:10])
+    hh = int(dts[14:16])
+    mm = int(dts[17:19])
+    return year, month, day, hh, mm
+# dt_str_8601_to_epoch: generates 1381352400.0 from YYYY-MM-DDTHH:MM:SS
+def dt_str_8601_to_epoch(year, month, day, hour, minute):
+    """convert YYYY-MM-DDTHH:MM:SS to epoch"""
+    t = datetime.datetime(year, month, day, hour, minute)
+    return time.mktime(t.timetuple())
+# dt_str_8601_to_date: generates for eg: 2013-10-10
+def dt_str_8601_to_date(year, month, day):
+    """return generates YYYY-MM-DD"""
+    return datetime.date(year, month, day)
+# dt_iso_8601_utc: generates utc: 1381339265.0
+def dt_iso_8601_utc():
+    """return generates utc: 1381339265.0"""
+    t = datetime.datetime.utcnow()
+    return time.mktime(t.timetuple())
+# dt_iso_8601_utc_offset: generates utc+offset 138137865.0
+def dt_iso_8601_utc_offset():
+    t = datetime.datetime.now()
+    return time.mktime(t.timetuple())
+#
+# --- end time tools ---
+
+
 #===
 # name: Nextgen
 # date: 2013OCT09
