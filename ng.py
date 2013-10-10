@@ -214,7 +214,8 @@ class Nextgen:
 
                         # --- build list of file data --- 
                         # yaml date found?
-                        # TODO add yyyy yyyymm yyyymmm yyyymmdd yyyymmmdd 
+                        # TODO add yyyy yyyymm yyyymmm yyyymmdd yyyymmmdd
+                        #      add epoch to allow sorting by datetime
                         if date:
                             dt = self.extract_yaml_date(date)
                             year = dt['year']
@@ -241,7 +242,7 @@ class Nextgen:
                             minute = ""
                         tags.sort()
 
-                        # build dict of post data
+                        # --- build dict of post data ---
                         p = dict(contents=data,
                                  filepath=fpn,
                                  datetime=dt,
@@ -258,7 +259,7 @@ class Nextgen:
                                  markdown=is_markdown,
                                  displayed=is_displayed)
                         self.post.append(p)
-                        # --- build list of file data --- 
+                        # --- build list of post data --- 
                 if self.post: return True
         return False
     # processing

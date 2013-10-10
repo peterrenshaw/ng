@@ -61,10 +61,12 @@ class TestNg(unittest.TestCase):
         pass
     # tags
     def test_update_tags_ok(self):
+        """remember, tag list returns unchanged, even on failure"""
         tag = "today"
         tags = []
         self.assertEqual(self.n.update_tags(tag, tags),['today'])
     def test_update_tags_fail(self):
+        """remember, tags list returns unchanged, even on failure"""
         tag = "today"
         tags = ['today']
         self.assertEqual(self.n.update_tags(tag, tags),tags)
