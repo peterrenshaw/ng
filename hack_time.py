@@ -9,7 +9,8 @@ from datetime import date
 # birthtime = datetime.datetime(1973, 01, 18, 3, 45, 50)   # 1973-01-18 03:45:50
 #  YYYY-MM-DDTHH:MM:SS
 # <http://docs.python.org/2/library/datetime.html#datetime.datetime.isoformat>
-
+# <http://pleac.sourceforge.net/pleac_python/datesandtimes.html>
+# <http://docs.python.org/2/library/datetime.html>
 
 st = "2013-10-10T14:08:00"
 # dt_iso_valid: check  if "YYYY-MM-DDTHH:MM:SS"
