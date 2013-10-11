@@ -18,19 +18,31 @@ class TestNg(unittest.TestCase):
     def setUp(self):
         self.n = ng.Nextgen()
         self.source_dir = os.getcwd()
+        self.source_dir_fail = os.path.join(self.source_dir, 'foo')
     def tearDown(self):
         self.n = None
+        self.soruce_dir = None
+        self.source_dir_fail = None
 
 
     # init
     def test_ng_init(self):
         self.assertTrue(self.n)
 
-    # source
+    # directory
+    def test_is_dir_valid_ok(self):
+        self.assertTrue(self.n.is_dir_valid(self.source_dir))
+    def test_is_dir_valid_fail(self):
+        self.assertFalse(self.n.is_dir_valid(self.source_dir_fail))
     def test_ng_source_ok(self):
         self.assertTrue(self.n.source(self.source_dir))
     def test_ng_source_fail(self):
         self.assertFalse(self.n.source(""))
+    def test_ng_dest_ok(self):
+        self.assertTrue(self.n.destination(self.source_dir))
+    def test_ng_dest_fail(self):
+        self.assertFalse(self.n.destination(self.source_dir_fail))
+
 
     # read
     def test_ng_read_ok(self):
@@ -73,7 +85,7 @@ class TestNg(unittest.TestCase):
     # read
     def test_read_ok(self):
         # valid directory, not file!!!
-        d = os.path.join(self.source_dir)
+        d = os.path.isdir(self.source_dir)
         self.assertTrue(self.n.read(d))
     def test_read_fail(self):
         self.assertFalse(self.n.read(""))
@@ -87,6 +99,10 @@ def suite():
     tests = ['test_ng_init',
              'test_ng_source_ok',
              'test_ng_source_fail',
+             'test_is_dir_valid_ok',
+             'test_is_dir_valid_fail',
+             'test_ng_dest_ok',
+             'test_ng_dest_fail',
              'test_ng_read_ok',
              'test_ng_read_fail',
              'test_ng_filepath_ok',
@@ -97,7 +113,9 @@ def suite():
              'test_extract_yaml_date_ok',
              'test_extract_yaml_date_fail',
              'test_update_tags_ok',
-             'test_update_tags_fail']
+             'test_update_tags_fail',
+             'test_read_ok',
+             'test_read_fail']
 
     return unittest.TestSuite(map(TestNg, tests))
 

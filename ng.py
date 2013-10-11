@@ -82,18 +82,20 @@ class DateIso8601:
             iso = str_iso_8601
         else:
             iso = self.iso
+
         self.validate(iso)   # don't assume valid, re-validate
         if self.is_valid:
             self.iso = iso
-              #0123456789012345678
-            # "2013-10-10T14:08:00"
+
+            #  0123456789012345678
+            #  2013-10-10T14:08:00
             self.year = int(self.iso[0:4])
             self.day = int(self.iso[5:7])
             self.month = int(self.iso[8:10])
             self.month_mm = int(self.iso[5:7])
-            self.month_mmm = ""
 
             # convert mm to mmm
+            self.month_mmm = ""
             count = 1
             for dd in self.mmm:
                 if count == int(self.month_mm):
@@ -166,15 +168,12 @@ class Nextgen:
         self.is_raw = True
         self.yaml = []
     # directories
-    def directory(self, file_dir=""):
+    def is_dir_valid(self, file_dir=""):
         """valid directory or F"""
-        if file_dir:
-            if os.path.isdir(file_dir):
-                return file_dir
-        return False
+        return file_dir if os.path.isdir(file_dir) else False
     def source(self, file_dir=""):
         """valid source directory or F"""
-        sdp = self.directory(file_dir)
+        sdp = self.is_dir_valid(file_dir)
         if sdp: 
             self.source_dir = sdp
             return True
@@ -182,7 +181,7 @@ class Nextgen:
             return False
     def destination(self, file_dir=""):
         """valid destination directory or F"""
-        fdp = self.directory(file_dir)
+        fdp = self.is_dir_valid(file_dir)
         if fdp: 
             self.dest_dir = fdp
             return True
@@ -252,13 +251,15 @@ class Nextgen:
         """extract date using Date8601"""
         if self.date8601.validate(date):
             (year, month, month_mm, month_mmm, day, hour, minute) = self.date8601.crack()
-            return dict(year = year,
-                            month = month,
-                            month_mm = month_mm,  # mm 10
-                            month_mmm = month_mmm, # mmm OCT
-                            day = day,
-                            hour = hour,
-                            minute = minute)
+            epoch_utc = self.date8601.epoch()  # for index, utc for accuracy
+            return dict(index_utc = epoch_utc,
+                        year = year,
+                        month = month,
+                        month_mm = month_mm,  # mm 10
+                        month_mmm = month_mmm, # mmm OCT
+                        day = day,
+                        hour = hour,
+                        minute = minute)
         return False
     # tags
     def update_tags(self, item, tags):
@@ -336,7 +337,7 @@ class Nextgen:
                         # TODO add yyyy yyyymm yyyymmm yyyymmdd yyyymmmdd
                         #      add epoch to allow sorting by datetime
                         dt = self.extract_yaml_date(date)
-
+                        index_utc = dt['index_utc']
                         year = dt['year']
                         month_mm = dt['month_mm']
                         month = month_mm
@@ -354,24 +355,26 @@ class Nextgen:
                         tags = self.update_tags(minute, tags)
 
                         # --- build dict of post data ---
-                        p = dict(contents=data,
-                                 filepath=fpn,
-                                 datetime=dt,
-                                 year=year,
-                                 month=month,
-                                 month_mmm=month_mmm,
-                                 month_mm=month_mm,
-                                 day=day,
-                                 hour=hour,
-                                 minute=minute,
-                                 tags=tags,
-                                 title=title,
-                                 ext='html',
-                                 description=description,
-                                 markdown=is_markdown,
-                                 displayed=is_displayed)
+                        p = dict(index=index_utc,     # utc epoch of post date
+                                 contents=data,       # body of post
+                                 filepath=fpn,        # filepath of post
+                                 datetime=dt,         # ???
+                                 year=year,           # YYYY
+                                 month=month,         # mm
+                                 month_mmm=month_mmm, # mmm
+                                 month_mm=month_mm,   # mm
+                                 day=day,             # dd
+                                 hour=hour,           # hh
+                                 minute=minute,       # mm
+                                 tags=tags,           # list of tags
+                                 title=title,         # post title
+                                 ext='html',           
+                                 description=description, # 200 char summary
+                                 markdown=is_markdown,    # bool, is markdown
+                                 displayed=is_displayed)  # bool, do u show?
                         self.post.append(p)
-                        # --- build list of post data --- 
+                        # --- build list of post data ---
+                self.post.sort()
                 if self.post: return True
         return False
     # processing
@@ -388,61 +391,66 @@ class Nextgen:
         """process source files into datastructure"""
         # we need a valid destination, don't make a directory
         if os.path.isdir(destination_dir):
-            self.dest_dir = destination_dir
-        else:
-            return False
+            if self.post:
+                self.post.sort()
+                for post in self.post:
+                    # destination
+                    self.dest_dir = destination_dir
 
-        if self.post:
-            for post in self.post:
-                # file
-                filename = post['title']
-                ext = post['ext']
+                    # file
+                    filename = post['title']
+                    ext = post['ext']
 
-                # directory
-                year = post['year']
-                month = post['month_mmm']    # mm or mmm? give option?
-                day = post['day']
+                    # dates
+                    year = "%s" % post['year']
+                    month = post['month_mmm']
+                    day = "%s" % post['day']
 
-                # flags
-                is_markdown = post['markdown']
-                displayed = post['displayed']
+                    # flags
+                    is_markdown = post['markdown']
+                    displayed = post['displayed']
 
-                if is_markdown:
-                    data = "" # process markdown
-                else:
-                    data = ""
-                
-                # dates
+                    if is_markdown:
+                        data = "" # process markdown
+                    else:
+                        data = ""
  
-                # --- unroll process list building ---
-                # build each directory and index page in each index pointing
-                # to child files. 
+                    # --- unroll process list building ---
+                    # build each directory and index page in each index pointing
+                    # to child files. 
                 
-                # directories
-                dyyyy = os.path.join(self.dest_dir, year)
-                dyyyy_mmm = os.path.join(self.dest_dir, year, month)
-                dyyyy_mmm_dd = os.path.join(self.dest_dir, year, month, day)
+                    # directories
+                    dyyyy = os.path.join(self.dest_dir, year)
+                    dyyyy_mmm = os.path.join(self.dest_dir, year, month)
+                    dyyyy_mmm_dd = os.path.join(self.dest_dir, year, \
+                                                month, day)
                 
-                # create directories
-                print("destination <%s>" % self.dest_dir)
-                if self.create_directory(dyyyy):
-                    print("\ts" % dyyyy)
-                else:
-                    print("\t%s" % dyyyy)
+                    # create directories
+                    print("destination <%s>" % self.dest_dir)
+                    if self.create_directory(dyyyy):
+                        print("\ts" % dyyyy)
+                    else:
+                        print("warning: fail to make YYYY destination directory")
+                        print("\t%s" % dyyyy)
+                        return False
 
-                if self.create_directory(dyyyy_mmm):
-                    print("\t%s" % dyyyy_mmm)
-                else:
-                    print("\t%s" % dyyyy_mmm)
+                    if self.create_directory(dyyyy_mmm):
+                        print("\t%s" % dyyyy_mmm)
+                    else:
+                        print("warning: fail to make YYYYMMM destination directory")
+                        print("\t%s" % dyyyy_mmm)
+                        return False
 
-                if self.create_directory(dyyyy_mmm_dd):
-                    print("\t%s" % dyyyy_mmm_dd)
-                else:
-                    print("\t%s" % dyyyy_mmm_dd)
+                    if self.create_directory(dyyyy_mmm_dd):
+                        print("\t%s" % dyyyy_mmm_dd)
+                    else:
+                        print("warning: fail to make YYYYMMMDD destination directory")
+                        print("\t%s" % dyyyy_mmm_dd)
+                        return False
 
-                # save content
+                    # save content
                 
-                # check file, ok, move along
+                    # check file, ok, move along
             return True    
         else:
             return False
