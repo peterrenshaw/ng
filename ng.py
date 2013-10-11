@@ -80,9 +80,9 @@ class DateIso8601:
         # test for supplied or current
         if str_iso_8601: 
             iso = str_iso_8601
-            self.validate(iso)
         else:
             iso = self.iso
+        self.validate(iso)   # don't assume valid, re-validate
         if self.is_valid:
             self.iso = iso
               #0123456789012345678
@@ -147,7 +147,7 @@ class DateIso8601:
 # date: 2013OCT09
 # prog: pr
 # desc: hack an old, nextgeneration static blog
-#       engine in 8 hrs
+#       engine in 8 hrs (no)
 # usge: 
 #            ng = Nextgen()
 #            ng.source(<source directory>)
@@ -156,6 +156,7 @@ class DateIso8601:
 #===
 class Nextgen:
     def __init__(self, d8601=DateIso8601()):
+        """inject Date object, init variables"""
         self.date8601 = d8601
         self.source_dir = ""
         self.dest_dir = ""
