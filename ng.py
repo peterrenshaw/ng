@@ -114,9 +114,9 @@ class DateIso8601:
             return False
     def epoch(self):
         """return ISO6601 as epoch"""
+        self.crack()
         if self.is_valid:
-            t = datetime.datetime(self.year, self.month, self.day, 
-                                  self.hour, self.minute)
+            t = datetime.datetime(self.year, self.month, self.day, self.hour, self.minute)
             self.epoch = time.mktime(t.timetuple())
             return self.epoch
         else:
@@ -125,7 +125,8 @@ class DateIso8601:
         """returns ISO6601 as YYYY-MM-DD"""
         if self.is_valid:
             self.dt_date = datetime.date(self.year, self.month, self.day)
-            return self.dt_date.strftime(self.iso_8601_date_strf)
+            date = self.dt_date.strftime(self.iso_8601_date_strf)
+            return date
         else:
             return False
     def now(self):
@@ -135,7 +136,7 @@ class DateIso8601:
         # "YYYY-MM-DDTHH:MM:SS"
         # <http://cpan.uwinnipeg.ca/htdocs/Time-Piece-ISO/Time/Piece/ISO.html>
         # TODO gmt or local time, ability to specify
-        dt = t = datetime.datetime.utcnow().strftime(self.iso_8601_strf)
+        dt = datetime.datetime.utcnow().strftime(self.iso_8601_strf)
         if self.validate(dt):
             return dt
         else:
@@ -168,9 +169,12 @@ class Nextgen:
         self.is_raw = True
         self.yaml = []
     # directories
-    def is_dir_valid(self, file_dir=""):
+    def is_dir_valid(self, file_dir):
         """valid directory or F"""
-        return file_dir if os.path.isdir(file_dir) else False
+        if file_dir:
+            if os.path.isdir(file_dir):
+                    return file_dir
+        return False
     def source(self, file_dir=""):
         """valid source directory or F"""
         sdp = self.is_dir_valid(file_dir)
@@ -251,9 +255,7 @@ class Nextgen:
         """extract date using Date8601"""
         if self.date8601.validate(date):
             (year, month, month_mm, month_mmm, day, hour, minute) = self.date8601.crack()
-            epoch_utc = self.date8601.epoch()  # for index, utc for accuracy
-            return dict(index_utc = epoch_utc,
-                        year = year,
+            return dict(year = year,
                         month = month,
                         month_mm = month_mm,  # mm 10
                         month_mmm = month_mmm, # mmm OCT
@@ -337,7 +339,7 @@ class Nextgen:
                         # TODO add yyyy yyyymm yyyymmm yyyymmdd yyyymmmdd
                         #      add epoch to allow sorting by datetime
                         dt = self.extract_yaml_date(date)
-                        index_utc = dt['index_utc']
+                        #index_utc = dt['index_utc']
                         year = dt['year']
                         month_mm = dt['month_mm']
                         month = month_mm
@@ -355,7 +357,7 @@ class Nextgen:
                         tags = self.update_tags(minute, tags)
 
                         # --- build dict of post data ---
-                        p = dict(index=index_utc,     # utc epoch of post date
+                        p = dict(#index=index_utc,     # utc epoch of post date
                                  contents=data,       # body of post
                                  filepath=fpn,        # filepath of post
                                  datetime=dt,         # ???

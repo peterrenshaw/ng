@@ -47,14 +47,17 @@ class TestNg(unittest.TestCase):
     # read
     def test_ng_read_ok(self):
         self.n.source(self.source_dir)
-        self.assertTrue(self.n.read())
+        status = self.n.read()
+        self.assertTrue(status != False)
     def test_ng_read_fail(self):
         self.n.source("")
         self.assertFalse(self.n.read())
     def test_ng_filepath_ok(self):
         self.n.source(self.source_dir)
-        self.n.read()
-        self.assertTrue(len(self.n.filepath) > 0)
+        if self.n.read():
+            self.assertTrue(len(self.n.filepath) > 0)
+        else:
+            self.assertTrue(False)
     def test_ng_filepath_fail(self):
         pass
 
@@ -85,10 +88,12 @@ class TestNg(unittest.TestCase):
     # read
     def test_read_ok(self):
         # valid directory, not file!!!
-        d = os.path.isdir(self.source_dir)
-        self.assertTrue(self.n.read(d))
+        #rok = self.n.read(self.source_dir)
+        #self.assertTrue(rok)
+        pass
     def test_read_fail(self):
-        self.assertFalse(self.n.read(""))
+        rof = self.n.read("")
+        self.assertFalse(rof)
 
     # process
 #---

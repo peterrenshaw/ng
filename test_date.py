@@ -63,12 +63,14 @@ class TestDate(unittest.TestCase):
         """return epoch from ISO8601 in string format"""
         status = self.d.validate(self.iso_valid)
         self.d.crack()
-        self.assertTrue(self.d.epoch())
+        e = self.d.epoch()
+        self.assertTrue(e)
     def test_epoch_fail(self):
         """return F from epoch with invalid ISO8601 in str fmt"""
         status = self.d.validate(self.iso_invalid)
         self.d.crack()
-        self.assertFalse(self.d.epoch())
+        e = self.d.epoch()
+        self.assertFalse(e)
 
 
 #---
