@@ -54,8 +54,23 @@ class TestDate(unittest.TestCase):
         self.assertEqual(month, 10)
         self.assertEqual(day, 10)
         self.assertEqual(self.d.date(),'2013-10-10')
+    def test_date_fail(self):
+        """test date fails on invalid iso format"""
+        status = self.d.validate(self.iso_invalid)
+        self.d.crack()
+        self.assertFalse(self.d.date())
+    def test_epoch_ok(self):
+        """return epoch from ISO8601 in string format"""
+        status = self.d.validate(self.iso_valid)
+        self.d.crack()
+        self.assertTrue(self.d.epoch())
+    def test_epoch_fail(self):
+        """return F from epoch with invalid ISO8601 in str fmt"""
+        status = self.d.validate(self.iso_invalid)
+        self.d.crack()
+        self.assertFalse(self.d.epoch())
 
-    # process
+
 #---
 # suite: allows all tests run here to be run externally at 'test_all.py'
 #---
@@ -65,7 +80,10 @@ def suite():
              'test_date_validate_ok',
              'test_date_validate_false',
              'test_crack_ok',
-             'test_date_ok]
+             'test_date_ok',
+             'test_date_fail',
+             'test_epoch_ok',
+             'test_epoch_fail']
 
     return unittest.TestSuite(map(TestDate, tests))
 

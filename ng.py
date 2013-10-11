@@ -127,11 +127,13 @@ class DateIso8601:
         else:
             return False
     def now(self):
-        """return datetime now as ISO6601"""
+        """return datetime UTC now as ISO6601"""
+        # So if you don't explicitly state the time, this call will be UTC
+        # for now - because local time is complex
         # "YYYY-MM-DDTHH:MM:SS"
         # <http://cpan.uwinnipeg.ca/htdocs/Time-Piece-ISO/Time/Piece/ISO.html>
         # TODO gmt or local time, ability to specify
-        dt = datetime.datetime.now().strftime(self.iso_8601_strf)
+        dt = t = datetime.datetime.utcnow().strftime(self.iso_8601_strf)
         if self.validate(dt):
             return dt
         else:
