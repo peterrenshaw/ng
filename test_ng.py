@@ -20,14 +20,16 @@ class TestNg(unittest.TestCase):
         self.source_dir = os.getcwd()  # assumption: has valid files
         self.source_dir_fail = os.path.join(self.source_dir, 'foo')
         self.yyyy = "2013"
-        self.mm = 10
+        self.mm = "10"
         self.mmm = "OCT"
-        self.dd = 12
+        self.dd = "12"
     def tearDown(self):
+        path = self.n.path_yyyy(self.yyyy)
+        self.n.remove_directory(path)
+        self.yyyy = None
         self.n = None
         self.soruce_dir = None
         self.source_dir_fail = None
-        self.yyyy = None
         self.mm = None
         self.mmm = None
         self.dd = None
@@ -47,7 +49,8 @@ class TestNg(unittest.TestCase):
     def test_ng_dest_fail(self):
         self.assertFalse(self.n.destination(self.source_dir_fail))
     def test_create_dir_yyyy_ok(self):
-        pass
+        path = self.n.path_yyyy(self.yyyy)
+        self.assertTrue(self.n.create_directory(path))
     def test_create_dir_yyyy_fail(self):
         pass
     def test_create_dir_yyyy_mm_ok(self):
