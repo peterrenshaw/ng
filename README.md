@@ -15,4 +15,4 @@ markdown: True
 
 
 
-# vim: ff=unix:ts=4:sw=4:tw=78:noai:expandtab
+vim: ff=unix:ts=4:sw=4:tw=78:noai:expandtab
