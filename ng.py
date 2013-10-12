@@ -117,7 +117,9 @@ class DateIso8601:
         """return ISO6601 as epoch"""
         self.crack()
         if self.is_valid:
-            t = datetime.datetime(self.year, self.month, self.day, self.hour, self.minute)
+            t = datetime.datetime(self.year, self.month, 
+                                  self.day, self.hour, 
+                                  self.minute)
             self.epoch = time.mktime(t.timetuple())
             return self.epoch
         else:
@@ -185,6 +187,21 @@ class Nextgen:
            counter += 1
         return post
     # TODO: optomise - find a better way
+    def ex_yaml(self, data):
+        if not data:
+            return False
+        lines = data.split("\n")
+        count = 0
+        yaml = []
+        for line in lines:
+            if line == '---':
+                count += 1
+            if count > 1 and count < 2:
+                if line:
+                    data = line.split(":")
+                    yaml.append({data[0]:data[1]})
+                    print("line %s" % line)
+        return yaml
     def extract_yaml(self, data):
         """
         extract from data, yaml or F by searching for
@@ -247,7 +264,7 @@ class Nextgen:
            failure=
         """
         if item:
-            if item not in tags:    # remove duplicates
+            if item not in tags:    # no dupes
                 tags.append(item)
         return tags
     # directories
@@ -266,6 +283,7 @@ class Nextgen:
         else:
             return False
     def directory(self, path, is_create):
+        """create or delete directory path"""
         if is_create:
             if not os.path.isdir(path):
                 os.mkdir(path)
@@ -274,6 +292,7 @@ class Nextgen:
                 return False
         else:
             if os.path.isdir(path):
+                # DANGER Will Robinson, DANGER
                 shutil.rmtree(path)
                 return True
             else:
@@ -282,22 +301,14 @@ class Nextgen:
         """create destination directory or F"""
         return self.directory(path, True)
     def remove_directory(self, path):
+        """remove directory & everything below it"""
         return self.directory(path, False)
     # file paths
-    def path_yyyy(self, year):
-        path = os.path.join(self.dest_dir, str(year))
-        return path
-    def path_yyyy_mm(self, year, mm):
-        path = os.path.join(self.dest_dir, str(year), str(mm))
-        return path
-    def path_yyyy_mm_dd(self, year, mm, day):
-        path = os.path.join(self.dest_dir, str(year), str(mm), str(day))
-        return path
-    def path_yyyy_mmm(self, year, mmm):
-        path = os.path.join(self.dest_dir, str(year), str(mmm))
-        return path
-    def path_yyyy_mmm_dd(self, year, mmm, day):
-        path = os.path.join(self.dest_dir, str(year), str(mmm), str(day))
+    def path_build(self, lst_paths):
+        """build a path from list of path fragments"""
+        path = ""
+        for p in lst_paths:
+            path = os.path.join(path, str(p))
         return path
     # read 
     def read_file_content(self, filename):
@@ -334,12 +345,15 @@ class Nextgen:
             self.source_dir = file_dir        # valid, save for later
             self.filepath = []                # init filepath storage
             self.filepaths = self.read_file_names(self.source_dir)
+            #print("filepaths=%s" % self.filepaths)
             # only if there's a file
             if len(self.filepaths) > 0: # this is a list
                 data = ""
                 # we have the filename, now the contents
                 for fpn in self.filepaths:
+                    #print("fpn=%s" % fpn)
                     data = self.read_file_content(fpn[0])
+                    #print("data=%s" % data)
                     if data:
                         # yaml
                         tags = []
@@ -379,29 +393,31 @@ class Nextgen:
                         # TODO add yyyy yyyymm yyyymmm yyyymmdd yyyymmmdd
                         #      add epoch to allow sorting by datetime
                         dt = self.extract_yaml_date(date)
-                        #index_utc = dt['index_utc']
-                        year = dt['year']
-                        month_mm = dt['month_mm']
-                        month = month_mm
-                        month_mmm = dt['month_mmm']
-                        day = dt['day']
-                        hour = dt['hour']
-                        minute = dt['hour']
+                        #print("dt=%s" % dt)
+                        if dt:
+                            #index_utc = dt['index_utc']
+                            year = dt['year']
+                            month_mm = dt['month_mm']
+                            month = month_mm
+                            month_mmm = dt['month_mmm']
+                            day = dt['day']
+                            hour = dt['hour']
+                            minute = dt['hour']
                         
-                        # tags
-                        tags = self.update_tags(year, tags)
-                        tags = self.update_tags(month_mm, tags)
-                        tags = self.update_tags(month_mmm, tags)
-                        tags = self.update_tags(day, tags)
-                        tags = self.update_tags(hour, tags)
-                        tags = self.update_tags(minute, tags)
+                            # tags
+                            tags = self.update_tags(year, tags)
+                            tags = self.update_tags(month_mm, tags)
+                            tags = self.update_tags(month_mmm, tags)
+                            tags = self.update_tags(day, tags)
+                            tags = self.update_tags(hour, tags)
+                            tags = self.update_tags(minute, tags)
 
-                        # post content
-                        yml_count = len(self.yaml)
-                        content = self.extract_content(yml_count, data)
+                            # post content
+                            yml_count = len(self.yaml)
+                            content = self.extract_content(yml_count, data)
                         
-                        # --- build dict of post data ---
-                        p = dict(#index=index_utc,    # utc epoch of post date
+                            # --- build dict of post data ---
+                            p = dict(#index=index_utc,    # utc epoch of post date
                                  contents=data,       # body of post
                                  filepath=fpn,        # filepath of post
                                  datetime=dt,         # ???
@@ -426,8 +442,10 @@ class Nextgen:
                                  ext='html',          
                                  markdown=is_markdown,    # bool, is markdown
                                  displayed=is_displayed)  # bool, do u show?
-                        self.post.append(p)
-                        # --- build list of post data ---
+                            self.post.append(p)
+                            # --- build list of post data ---
+                        else:
+                            return False
             return True
         else:
             return False
@@ -445,7 +463,7 @@ class Nextgen:
                     self.dest_dir = destination_dir
 
                     # --- process markdown ---
-                    if is_markdown:
+                    if post['markdown']:
                         post['content_processed'] = "" # process markdown
                     else:
                         #print(post['content'])
@@ -458,19 +476,19 @@ class Nextgen:
                     day = "%s" % post['day']
 
                     # --- directories ---
-                    path_yyyy = self.path_yyyy(year)
+                    path_yyyy = self.path_build([year])
                     post['path_yyyy'] = path_yyyy
                     
-                    path_yyyymm = self.path_yyyy_mm(year, mm)
+                    path_yyyymm = self.path_build([year, mm])
                     post['path_yyyymm'] = path_yyyymm
 
-                    path_yyyymmdd = self.path_yyyy_mm_dd(year, mm, day)
+                    path_yyyymmdd = self.path_build([year, mm, day])
                     post['path_yyyymmdd'] = path_yyyymmdd
 
-                    path_yyyymmm = self.path_yyyy_mmm(year, mmm)
+                    path_yyyymmm = self.path_build([year, mmm])
                     post['path_yyyymmm'] = path_yyyymmm
 
-                    path_yyyymmmdd = self.path_yyyy_mmm_dd(year, mmm, day)
+                    path_yyyymmmdd = self.path_build([year, mmm, day])
                     post['path_yyyymmmdd'] = path_yyyymmmdd
                     post["postpath"] = path_yyyymmmdd
                     #
@@ -526,23 +544,29 @@ def main():
                 if os.path.isdir(options.dest_dir):
                     # the business
                     dt = DateIso8601("")
-
                     ng = Nextgen(dt)
-                    ng.read(options.src_dir)
+                    if ng.read(options.src_dir):
+                        for f in ng.filepath:
+                            print("\t%s" % f)
+                        print("destination <%s>" % options.dest_dir)
+                        count = 1
+                        for p in ng.post:
+                            print("%s %s: %s" % (count, p['title'], p['description']))
+                            count += 1
+                        print("process")
+                        if not ng.process(options.dest_dir):
+                            print("error: problems processing")
+                            print("%s <%s>" % options.dest_dir)
+                            sys.exit(1)
 
-                    for f in ng.filepath:
-                        print("\t%s" % f)
-                    print("destination <%s>" % options.dest_dir)
-                    print("\tpost [%s]" % len(ng.post))
-
-                    print("process")
-                    if not ng.process(options.dest_dir):
-                        print("error: problems processing")
-                        print("\t<%s>" % options.dest_dir)
+                        print("save")
+                        ng.save()
+                        dt = None
+                        ng = None
+                    else:
+                        print("error: problems reading data")
+                        print("\t<%s>" % options.src_dir)
                         sys.exit(1)
-
-                    dt = None
-                    ng = None
                 else:
                     print("error: must supply a valid <destination directory>")
                     print("\t<%s>" % options.dest_dir)

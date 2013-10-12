@@ -24,7 +24,7 @@ class TestNg(unittest.TestCase):
         self.mmm = "OCT"
         self.dd = "12"
     def tearDown(self):
-        path = self.n.path_yyyy(self.yyyy)
+        path = self.n.path_build([self.yyyy])
         self.n.remove_directory(path)
         self.yyyy = None
         self.n = None
@@ -48,26 +48,10 @@ class TestNg(unittest.TestCase):
         self.assertTrue(self.n.destination(self.source_dir))
     def test_ng_dest_fail(self):
         self.assertFalse(self.n.destination(self.source_dir_fail))
-    def test_create_dir_yyyy_ok(self):
-        path = self.n.path_yyyy(self.yyyy)
+    def test_path_build_ok(self):
+        path = self.n.path_build([self.yyyy])
         self.assertTrue(self.n.create_directory(path))
-    def test_create_dir_yyyy_fail(self):
-        pass
-    def test_create_dir_yyyy_mm_ok(self):
-        pass
-    def test_create_dir_yyyy_mm_fail(self):
-        pass
-    def test_create_dir_yyyy_mm_dd_ok(self):
-        pass
-    def test_create_dir_yyyy_mm_dd_fail(self):
-        pass
-    def test_create_dir_yyyy_mmm_ok(self):
-        pass
-    def test_create_dir_yyyy_mmm_fail(self):
-        pass
-    def test_create_dir_yyyy_mmm_dd_ok(self):
-        pass
-    def test_create_dir_yyyy_mmm_dd_fail(self):
+    def test_path_build_fail(self):
         pass
 
     # read
@@ -118,6 +102,8 @@ def suite():
              'test_is_dir_valid_fail',
              'test_ng_dest_ok',
              'test_ng_dest_fail',
+             'test_path_build_ok',
+             'test_path_build_fail',
              'test_ng_read_ok',
              'test_ng_read_fail',
              'test_extract_yaml_ok',
