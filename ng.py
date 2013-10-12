@@ -183,6 +183,27 @@ class Nextgen:
             return True
         else:
             return False
+    def create_directory(self, path):
+        """create destination directory or F"""
+        if not os.path.isdir(path):
+            os.mkdir(path)
+            return True
+        return False
+    def create_dir_yyyy(self, year):
+        path = os.path.join(self.dest_dir, year)
+        return self.create_directory(path)
+    def create_dir_yyyy_mm(self, year, mm):
+        path = os.path.join(self.dest_dir, year, str(mm))
+        return self.create_directory(path)
+    def create_dir_yyyy_mm_dd(self, year, mm, day):
+        path = os.path.join(self.dest_dir, year, str(mm), day)
+        return self.create_directory(path)
+    def create_dir_yyyy_mmm(self, year, mmm):
+        path = os.path.join(self.dest_dir, year, mmm)
+        return self.create_directory(path)
+    def create_dir_yyyy_mmm_dd(self, year, mmm, day):
+        path = os.path.join(self.dest_dir, year, mmm, day)
+        return self.create_directory(path)    
     # filepaths
     def read_file_content(self, filename):
         """read file contents or F"""
@@ -364,27 +385,18 @@ class Nextgen:
                                  displayed=is_displayed)  # bool, do u show?
                         self.post.append(p)
                         # --- build list of post data ---
-            self.post.sort()
             return True
         else:
             return False
     # processing
     def is_processed(self):
         """status of processing, set when completed processing, T/F"""
-        return self.is_raw
-    def create_directory(self, path):
-        """create destination directory or F"""
-        if not os.path.isdir(path):
-            os.mkdir(path)
-            return True
-        else:
-            return False        
+        return self.is_raw 
     def process(self, destination_dir):
         """process source files into datastructure"""
         # we need a valid destination, don't make a directory
         if os.path.isdir(destination_dir):
             if self.post:
-                self.post.sort()
                 for post in self.post:
                     # destination
                     self.dest_dir = destination_dir
@@ -395,7 +407,8 @@ class Nextgen:
 
                     # dates
                     year = "%s" % post['year']
-                    month = post['month_mmm']
+                    mmm = post['month_mmm']
+                    mm = post['month_mm']
                     day = "%s" % post['day']
 
                     # flags
@@ -412,34 +425,17 @@ class Nextgen:
                     # to child files. 
                 
                     # directories
-                    dyyyy = os.path.join(self.dest_dir, year)
-                    dyyyy_mmm = os.path.join(self.dest_dir, year, month)
-                    dyyyy_mmm_dd = os.path.join(self.dest_dir, year, \
-                                                month, day)
-                
-                    print(dyyyy)
-                    print(dyyyy_mmm)
-                    print(dyyyy_mmm_dd)
+                    self.create_dir_yyyy(year)
+                    self.create_dir_yyyy_mm(year, mm)
+                    self.create_dir_yyyy_mm_dd(year, mm, day)
+                    self.create_dir_yyyy_mmm(year, mmm)
+                    self.create_dir_yyyy_mmm_dd(year, mmm, day)
 
-                    # create directories
-                    print("destination <%s>" % self.dest_dir)
-                    if not self.create_directory(dyyyy):
-                        print("warning: fail to make YYYY destination directory")
-                        print("\t%s" % dyyyy)
-                        return False
-
-                    if not self.create_directory(dyyyy_mmm):
-                        print("warning: fail to make YYYYMMM destination directory")
-                        print("\t%s" % dyyyy_mmm)
-                        return False
-
-                    if not self.create_directory(dyyyy_mmm_dd):
-                        print("warning: fail to make YYYYMMMDD destination directory")
-                        print("\t%s" % dyyyy_mmm_dd)
-                        return False
+                    # index files
+                    
 
                     # save content
-                   # check file, ok, move along
+                    # check file, ok, move along
             print("ok")
             return True    
         else:
@@ -472,10 +468,9 @@ def main():
                     dt = DateIso8601("")
 
                     ng = Nextgen(dt)
-                    ng.source(options.src_dir)
-                    ng.read()
+                    ng.read(options.src_dir)
 
-                    for f in ng.file_path:
+                    for f in ng.filepath:
                         print("\t%s" % f)
                     print("destination <%s>" % options.dest_dir)
                     if ng.yaml:
@@ -484,14 +479,9 @@ def main():
                         print("\tno yaml")
 
                     print("\t%s post" % len(ng.post))
-                    #for p in ng.post:
-                    #    print("\t", p)
-                    #    print("\n")
 
                     print("process")
-                    if ng.process(options.dest_dir):
-                        print("ok")
-                    else:
+                    if not ng.process(options.dest_dir):
                         print("error: problems processing")
                         print("\t<%s>" % options.dest_dir)
                         sys.exit(1)
