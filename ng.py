@@ -188,21 +188,6 @@ class Nextgen:
            counter += 1
         return post
     # TODO: optomise - find a better way
-    def ex_yaml(self, data):
-        if not data:
-            return False
-        lines = data.split("\n")
-        count = 0
-        yaml = []
-        for line in lines:
-            if line == '---':
-                count += 1
-            if count > 1 and count < 2:
-                if line:
-                    data = line.split(":")
-                    yaml.append({data[0]:data[1]})
-                    print("line %s" % line)
-        return yaml
     def extract_yaml(self, data):
         """
         extract from data, yaml or F by searching for
@@ -337,6 +322,7 @@ class Nextgen:
                 fn.append(filename)
         return fn
     def read_file_names(self, dir_path):
+        """read filepath names by file extension, flatten lists to list"""
         rf = []
         for extension in self.ext:
             fn = self.read_file_name(dir_path, extension)
@@ -418,10 +404,9 @@ class Nextgen:
                             # post content
                             yml_count = len(self.yaml)
                             c = self.extract_content(yml_count, data)
-                            #print(len(c))
                             # --- build dict of post data ---
                             p = dict(#index=index_utc,    # utc epoch of post date
-                                 content=c,          # body of post
+                                 content=c,           # body of post
                                  filepath=fpn,        # filepath of post
                                  datetime=dt,         # ???
                                  year=year,           # YYYY
@@ -432,20 +417,20 @@ class Nextgen:
                                  hour=hour,           # hh
                                  minute=minute,       # mm
                                  tags=tags,           # list of tags
-                                 path_yyyy="",
-                                 path_yyyymm="",
-                                 path_yyyymmm="",
-                                 path_yyyymmdd="",
-                                 path_yyyymmmdd="",
+                                 path_yyyy="",        # use later year
+                                 path_yyyymm="",      # use later year, mm
+                                 path_yyyymmm="",     # use later year, mmm
+                                 path_yyyymmdd="",    # use later year,mm,dd
+                                 path_yyyymmmdd="",   # use later year,mmm,dd
                                  postpath="",         # post path
                                  title=title,         # post title
                                  description=description, # 200 char summary
-                                 content_processed="",
-                                 ext='html',          
+                                 content_processed="",# content thru markdown
+                                 ext='html',          # content filename ext
                                  markdown=is_markdown,    # bool, is markdown
                                  displayed=is_displayed)  # bool, do u show?
-                            self.post.append(p)
-                            
+
+                            self.post.append(p)                            
                             # --- build list of post data ---
                         else:
                             return False
@@ -461,17 +446,14 @@ class Nextgen:
                 for post in self.post:
                     # destination
                     self.dest_dir = destination_dir
-
                     # --- process markdown ---
                     if post['markdown']:
                         if post['content']:
                             md = markdown2.markdown(post['content'])
-                            #print(len(md))
                             post['content_processed'] = md # process markdown
                         else:
                             post['content_processed'] = ""
                     else:
-                        #print(post['content'])
                         pass
 
                     # --- dates ---
@@ -562,7 +544,6 @@ def main():
                         count = 1
                         for p in ng.post:
                             print("%s %s: %s" % (count, p['title'], p['description']))
-                            #print(len(p['content_processed']))
                             count += 1
                         print("save")
                         ng.save()
