@@ -175,14 +175,6 @@ class Nextgen:
             if os.path.isdir(file_dir):
                     return file_dir
         return False
-    def source(self, file_dir=""):
-        """valid source directory or F"""
-        sdp = self.is_dir_valid(file_dir)
-        if sdp: 
-            self.source_dir = sdp
-            return True
-        else:
-            return False
     def destination(self, file_dir=""):
         """valid destination directory or F"""
         fdp = self.is_dir_valid(file_dir)
@@ -276,14 +268,10 @@ class Nextgen:
     # read files
     def read(self, file_dir=""):
         """read source directory & slurp up filenames"""
-        # load source file directory 
-        if file_dir:
-            if not self.source(file_dir):
-                return False
-
         # no file directory supplied, assume preset
         # slurp files, build 'file directory + path + glob.ext'
-        if self.source_dir:
+        if self.is_dir_valid(file_dir):
+            self.source_dir = file_dir        # valid, save for later
             self.filepath = []                # init filepath storage 
             for extension in self.ext:        # extract for each ext
                 glob_ext = "*.%s" % extension # build extension, filepath glob, *.foo
@@ -376,9 +364,10 @@ class Nextgen:
                                  displayed=is_displayed)  # bool, do u show?
                         self.post.append(p)
                         # --- build list of post data ---
-                self.post.sort()
-                if self.post: return True
-        return False
+            self.post.sort()
+            return True
+        else:
+            return False
     # processing
     def is_processed(self):
         """status of processing, set when completed processing, T/F"""
@@ -387,6 +376,7 @@ class Nextgen:
         """create destination directory or F"""
         if not os.path.isdir(path):
             os.mkdir(path)
+            return True
         else:
             return False        
     def process(self, destination_dir):
@@ -427,32 +417,30 @@ class Nextgen:
                     dyyyy_mmm_dd = os.path.join(self.dest_dir, year, \
                                                 month, day)
                 
+                    print(dyyyy)
+                    print(dyyyy_mmm)
+                    print(dyyyy_mmm_dd)
+
                     # create directories
                     print("destination <%s>" % self.dest_dir)
-                    if self.create_directory(dyyyy):
-                        print("\ts" % dyyyy)
-                    else:
+                    if not self.create_directory(dyyyy):
                         print("warning: fail to make YYYY destination directory")
                         print("\t%s" % dyyyy)
                         return False
 
-                    if self.create_directory(dyyyy_mmm):
-                        print("\t%s" % dyyyy_mmm)
-                    else:
+                    if not self.create_directory(dyyyy_mmm):
                         print("warning: fail to make YYYYMMM destination directory")
                         print("\t%s" % dyyyy_mmm)
                         return False
 
-                    if self.create_directory(dyyyy_mmm_dd):
-                        print("\t%s" % dyyyy_mmm_dd)
-                    else:
+                    if not self.create_directory(dyyyy_mmm_dd):
                         print("warning: fail to make YYYYMMMDD destination directory")
                         print("\t%s" % dyyyy_mmm_dd)
                         return False
 
                     # save content
-                
-                    # check file, ok, move along
+                   # check file, ok, move along
+            print("ok")
             return True    
         else:
             return False
@@ -497,9 +485,9 @@ def main():
                         print("\tno yaml")
 
                     print("\t%s post" % len(ng.post))
-                    for p in ng.post:
-                        print("\t", p)
-                        print("\n")
+                    #for p in ng.post:
+                    #    print("\t", p)
+                    #    print("\n")
 
                     print("process")
                     if ng.process(options.dest_dir):

@@ -17,7 +17,7 @@ import ng
 class TestNg(unittest.TestCase):
     def setUp(self):
         self.n = ng.Nextgen()
-        self.source_dir = os.getcwd()
+        self.source_dir = os.getcwd()  # assumption: has valid files
         self.source_dir_fail = os.path.join(self.source_dir, 'foo')
     def tearDown(self):
         self.n = None
@@ -34,10 +34,6 @@ class TestNg(unittest.TestCase):
         self.assertTrue(self.n.is_dir_valid(self.source_dir))
     def test_is_dir_valid_fail(self):
         self.assertFalse(self.n.is_dir_valid(self.source_dir_fail))
-    def test_ng_source_ok(self):
-        self.assertTrue(self.n.source(self.source_dir))
-    def test_ng_source_fail(self):
-        self.assertFalse(self.n.source(""))
     def test_ng_dest_ok(self):
         self.assertTrue(self.n.destination(self.source_dir))
     def test_ng_dest_fail(self):
@@ -46,18 +42,14 @@ class TestNg(unittest.TestCase):
 
     # read
     def test_ng_read_ok(self):
-        self.n.source(self.source_dir)
-        status = self.n.read()
-        self.assertTrue(status != False)
+        self.assertTrue(self.n.read(self.source_dir))
     def test_ng_read_fail(self):
-        self.n.source("")
-        self.assertFalse(self.n.read())
+        self.assertFalse(self.n.read(""))
     def test_ng_filepath_ok(self):
-        self.n.source(self.source_dir)
-        if self.n.read():
-            self.assertTrue(len(self.n.filepath) > 0)
+        if self.n.read(self.source_dir):
+            self.assertTrue(self.n.file_paths())
         else:
-            self.assertTrue(False)
+            self.assertFalse(self.n.file_paths())
     def test_ng_filepath_fail(self):
         pass
 
@@ -88,12 +80,9 @@ class TestNg(unittest.TestCase):
     # read
     def test_read_ok(self):
         # valid directory, not file!!!
-        #rok = self.n.read(self.source_dir)
-        #self.assertTrue(rok)
-        pass
+        self.assertTrue(self.n.read(self.source_dir))
     def test_read_fail(self):
-        rof = self.n.read("")
-        self.assertFalse(rof)
+        self.assertFalse(self.n.read(""))
 
     # process
 #---
@@ -102,8 +91,6 @@ class TestNg(unittest.TestCase):
 def suite():
     """tests added to run in 'test_all.py'"""
     tests = ['test_ng_init',
-             'test_ng_source_ok',
-             'test_ng_source_fail',
              'test_is_dir_valid_ok',
              'test_is_dir_valid_fail',
              'test_ng_dest_ok',
