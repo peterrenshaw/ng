@@ -22,6 +22,9 @@ import datetime
 from optparse import OptionParser
 
 
+import markdown2
+
+
 # --- time tools start---
 #
 #===
@@ -178,10 +181,10 @@ class Nextgen:
             return False
         counter = 0
         lines = data.split("\n")
-        post = []
+        post = ""
         for line in lines:
            if counter > yaml_count + 1:
-                post.append(line)
+                post = "%s\n%s" % (post, line)
            counter += 1
         return post
     # TODO: optomise - find a better way
@@ -414,11 +417,11 @@ class Nextgen:
 
                             # post content
                             yml_count = len(self.yaml)
-                            content = self.extract_content(yml_count, data)
-                        
+                            c = self.extract_content(yml_count, data)
+                            #print(len(c))
                             # --- build dict of post data ---
                             p = dict(#index=index_utc,    # utc epoch of post date
-                                 contents=data,       # body of post
+                                 content=c,          # body of post
                                  filepath=fpn,        # filepath of post
                                  datetime=dt,         # ???
                                  year=year,           # YYYY
@@ -437,12 +440,12 @@ class Nextgen:
                                  postpath="",         # post path
                                  title=title,         # post title
                                  description=description, # 200 char summary
-                                 content=content,
                                  content_processed="",
                                  ext='html',          
                                  markdown=is_markdown,    # bool, is markdown
                                  displayed=is_displayed)  # bool, do u show?
                             self.post.append(p)
+                            
                             # --- build list of post data ---
                         else:
                             return False
@@ -450,9 +453,6 @@ class Nextgen:
         else:
             return False
     # processing
-    def is_processed(self):
-        """status of processing, set when completed processing, T/F"""
-        return self.is_raw 
     def process(self, destination_dir):
         """process source files into datastructure"""
         # we need a valid destination, don't make a directory
@@ -464,7 +464,12 @@ class Nextgen:
 
                     # --- process markdown ---
                     if post['markdown']:
-                        post['content_processed'] = "" # process markdown
+                        if post['content']:
+                            md = markdown2.markdown(post['content'])
+                            #print(len(md))
+                            post['content_processed'] = md # process markdown
+                        else:
+                            post['content_processed'] = ""
                     else:
                         #print(post['content'])
                         pass
@@ -549,16 +554,16 @@ def main():
                         for f in ng.filepath:
                             print("\t%s" % f)
                         print("destination <%s>" % options.dest_dir)
-                        print("process")
-                        count = 1
-                        for p in ng.post:
-                            print("%s %s: %s" % (count, p['title'], p['description']))
-                            count += 1
                         if not ng.process(options.dest_dir):
                             print("error: problems processing")
                             print("%s <%s>" % options.dest_dir)
                             sys.exit(1)
-
+                        print("process")
+                        count = 1
+                        for p in ng.post:
+                            print("%s %s: %s" % (count, p['title'], p['description']))
+                            #print(len(p['content_processed']))
+                            count += 1
                         print("save")
                         ng.save()
                         dt = None
