@@ -45,13 +45,6 @@ class TestNg(unittest.TestCase):
         self.assertTrue(self.n.read(self.source_dir))
     def test_ng_read_fail(self):
         self.assertFalse(self.n.read(""))
-    def test_ng_filepath_ok(self):
-        if self.n.read(self.source_dir):
-            self.assertTrue(self.n.file_paths())
-        else:
-            self.assertFalse(self.n.file_paths())
-    def test_ng_filepath_fail(self):
-        pass
 
     # yaml
     def test_extract_yaml_ok(self):
@@ -97,7 +90,6 @@ def suite():
              'test_ng_dest_fail',
              'test_ng_read_ok',
              'test_ng_read_fail',
-             'test_ng_filepath_ok',
              'test_extract_yaml_ok',
              'test_extract_yaml_fail',
              'test_extract_yaml_tags_ok',

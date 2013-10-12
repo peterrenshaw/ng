@@ -184,17 +184,13 @@ class Nextgen:
         else:
             return False
     # filepaths
-    def file_paths(self):
-        """return list of filepaths or F"""
-        if len(self.filepath) > 0: return self.filepath
-        else: return False
-    def read_file(self, filename):
+    def read_file_content(self, filename):
         """read file contents or F"""
         if os.path.isfile(filename):
            data = ""
            f = None
            try: 
-               with open(filename, encoding='utf-8') as f:
+               with open(filename) as f:
                    data = f.read()
                f.close()
                return data
@@ -202,6 +198,19 @@ class Nextgen:
                data = ""
                if f: f.close()
         return False
+    def read_file_name(self, dir_path, ext):
+        """read all filepaths given ext and directory path"""
+        glob_ext = "*.%s" % ext
+        gfp = os.path.join(dir_path, glob_ext)
+        fpn = [os.path.realpath(f) for f in glob.glob(gfp)]
+        return fpn
+    def read_file_names(self, dir_path):
+        rf = []
+        for extension in self.ext:
+            read_file = self.read_file_name(dir_path, extension)
+            if read_file:   # only add if not empty 
+                rf.append(self.read_file_name(dir_path, extension))
+        return rf
     # read, extract
     # TODO: optomise - find a better way
     def extract_yaml(self, data):
@@ -272,23 +281,14 @@ class Nextgen:
         # slurp files, build 'file directory + path + glob.ext'
         if self.is_dir_valid(file_dir):
             self.source_dir = file_dir        # valid, save for later
-            self.filepath = []                # init filepath storage 
-            for extension in self.ext:        # extract for each ext
-                glob_ext = "*.%s" % extension # build extension, filepath glob, *.foo
-                gfp = os.path.join(self.source_dir, glob_ext)
-
-                # returns list of filepaths
-                # <http://www.diveinto.org/python3/comprehensions.html#os>
-                fpn = [os.path.realpath(f) for f in glob.glob(gfp)]
-                if fpn: 
-                    self.filepath = fpn
-
+            self.filepath = []                # init filepath storage
+            self.filepaths = self.read_file_names(self.source_dir)
             # only if there's a file
-            if self.filepath:
+            if len(self.filepaths) > 0:
                 # we have the filename, now the contents
                 data = ""
-                for fpn in self.filepath:
-                    data = self.read_file(fpn)
+                for fpn in self.filepaths:
+                    data = self.read_file_content(fpn[0])
                     if data:
                         # yaml
                         tags = []
@@ -475,8 +475,7 @@ def main():
                     ng.source(options.src_dir)
                     ng.read()
 
-                    p = ng.file_paths()
-                    for f in p:
+                    for f in ng.file_path:
                         print("\t%s" % f)
                     print("destination <%s>" % options.dest_dir)
                     if ng.yaml:
