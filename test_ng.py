@@ -19,10 +19,18 @@ class TestNg(unittest.TestCase):
         self.n = ng.Nextgen()
         self.source_dir = os.getcwd()  # assumption: has valid files
         self.source_dir_fail = os.path.join(self.source_dir, 'foo')
+        self.yyyy = "2013"
+        self.mm = 10
+        self.mmm = "OCT"
+        self.dd = 12
     def tearDown(self):
         self.n = None
         self.soruce_dir = None
         self.source_dir_fail = None
+        self.yyyy = None
+        self.mm = None
+        self.mmm = None
+        self.dd = None
 
 
     # init
@@ -38,7 +46,26 @@ class TestNg(unittest.TestCase):
         self.assertTrue(self.n.destination(self.source_dir))
     def test_ng_dest_fail(self):
         self.assertFalse(self.n.destination(self.source_dir_fail))
-
+    def test_create_dir_yyyy_ok(self):
+        pass
+    def test_create_dir_yyyy_fail(self):
+        pass
+    def test_create_dir_yyyy_mm_ok(self):
+        pass
+    def test_create_dir_yyyy_mm_fail(self):
+        pass
+    def test_create_dir_yyyy_mm_dd_ok(self):
+        pass
+    def test_create_dir_yyyy_mm_dd_fail(self):
+        pass
+    def test_create_dir_yyyy_mmm_ok(self):
+        pass
+    def test_create_dir_yyyy_mmm_fail(self):
+        pass
+    def test_create_dir_yyyy_mmm_dd_ok(self):
+        pass
+    def test_create_dir_yyyy_mmm_dd_fail(self):
+        pass
 
     # read
     def test_ng_read_ok(self):
