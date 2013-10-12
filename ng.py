@@ -107,20 +107,18 @@ class DateIso8601:
 
             self.hour = int(self.iso[11:13])
             self.minute = int(self.iso[14:16])
-
-            return self.year, self.month, self.month_mm, \
-                   self.month_mmm, self.day, self.hour, \
-                   self.minute
+            return self.year, self.month, \
+                   self.month_mm, self.month_mmm, self.day, \
+                   self.hour, self.minute
         else: 
             return False
     def epoch(self):
         """return ISO6601 as epoch"""
-        self.crack()
         if self.is_valid:
             t = datetime.datetime(self.year, self.month, 
                                   self.day, self.hour, 
                                   self.minute)
-            self.epoch = time.mktime(t.timetuple())
+            self.epoch = "%s" % time.mktime(t.timetuple())
             return self.epoch
         else:
             return False
@@ -247,8 +245,8 @@ class Nextgen:
     def extract_yaml_date(self, date):
         """extract date using Date8601"""
         if self.date8601.validate(date):
-            (year, month, month_mm, 
-             month_mmm, day, hour, minute) = self.date8601.crack()
+            (year, month, month_mm, month_mmm, 
+             day, hour, minute) = self.date8601.crack()
             return dict(year = year,
                         month = month,
                         month_mm = month_mm,  # mm 10
@@ -330,13 +328,19 @@ class Nextgen:
         glob_ext = "*.%s" % ext
         gfp = os.path.join(dir_path, glob_ext)
         fpn = [os.path.realpath(f) for f in glob.glob(gfp)]
-        return fpn
+        fn = []
+        for filename in fpn:
+            if filename:
+                fn.append(filename)
+        return fn
     def read_file_names(self, dir_path):
         rf = []
         for extension in self.ext:
-            read_file = self.read_file_name(dir_path, extension)
-            if read_file:   # only add non empty 
-                rf.append(self.read_file_name(dir_path, extension))
+            fn = self.read_file_name(dir_path, extension)
+            if len(fn) > 0:
+                for filename in fn:
+                    if filename: 
+                        rf.append(filename)
         return rf
     def read(self, file_dir=""):
         """read source directory & slurp up filenames"""
@@ -345,15 +349,12 @@ class Nextgen:
             self.source_dir = file_dir        # valid, save for later
             self.filepath = []                # init filepath storage
             self.filepaths = self.read_file_names(self.source_dir)
-            #print("filepaths=%s" % self.filepaths)
             # only if there's a file
             if len(self.filepaths) > 0: # this is a list
                 data = ""
                 # we have the filename, now the contents
                 for fpn in self.filepaths:
-                    #print("fpn=%s" % fpn)
-                    data = self.read_file_content(fpn[0])
-                    #print("data=%s" % data)
+                    data = self.read_file_content(fpn)
                     if data:
                         # yaml
                         tags = []
@@ -393,9 +394,8 @@ class Nextgen:
                         # TODO add yyyy yyyymm yyyymmm yyyymmdd yyyymmmdd
                         #      add epoch to allow sorting by datetime
                         dt = self.extract_yaml_date(date)
-                        #print("dt=%s" % dt)
                         if dt:
-                            #index_utc = dt['index_utc']
+                            # datetime
                             year = dt['year']
                             month_mm = dt['month_mm']
                             month = month_mm
@@ -549,11 +549,11 @@ def main():
                         for f in ng.filepath:
                             print("\t%s" % f)
                         print("destination <%s>" % options.dest_dir)
+                        print("process")
                         count = 1
                         for p in ng.post:
                             print("%s %s: %s" % (count, p['title'], p['description']))
                             count += 1
-                        print("process")
                         if not ng.process(options.dest_dir):
                             print("error: problems processing")
                             print("%s <%s>" % options.dest_dir)
