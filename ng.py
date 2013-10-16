@@ -41,6 +41,7 @@ import markdown2
 #===
 class DateIso8601:
     def __init__(self, str_iso_8601="", dt=datetime):
+        """initialise variables and set up structures"""
         self.iso = str_iso_8601  # YYYY-MM-DDTHH:MM:SS
         self.dt = datetime       # passed in date object
         self.is_valid = False    # is str_iso_8601 valid format?
@@ -488,6 +489,16 @@ class Nextgen:
         # for post in posts
         #     build directory
         #         build file
+        #file = dict(filename=filename,
+        #            ext=extension,
+        #            title=title,
+        #            abstract=description,
+        #            tags=[],
+        #            date=date,
+        #            path=path,
+        #            body=content)
+                    
+                    
         #             filename + ext
         #             summary from description
         #             title

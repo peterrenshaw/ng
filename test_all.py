@@ -11,6 +11,7 @@ import unittest
 
 import test_ng 
 import test_date
+import test_page
 
 
 #---
@@ -21,10 +22,12 @@ def main():
     # add all new test suites per test module here
     suite_date = test_date.suite()
     suite_ng = test_ng.suite()
+    suite_page = test_page.suite()
 
     # add the suite to be tested here
     alltests = unittest.TestSuite((suite_date,
-                                   suite_ng))
+                                   suite_ng,
+                                   suite_page))
 
     # run the suite
     runner = unittest.TextTestRunner()

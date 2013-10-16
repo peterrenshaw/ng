@@ -14,5 +14,8 @@ markdown: True
     static blog engine - [md|txt] to HTML5
 
 
+2013OCT16
+* building hack_page.Page 
+- added tests
 
 vim: ff=unix:ts=4:sw=4:tw=78:noai:expandtab
