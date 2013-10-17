@@ -12,34 +12,27 @@ class Page:
         self.__header = ""     # template
         self.__footer = ""     # template
         self.__body = ""       # container for body
-
-        # body
-        self.title = ""      # display as is
-        self.abstract = ""   # 120 char summary
-        self.summary = ""    # 100 word summary
-        self.content = []
-
-        # filepath name 
-        self.path = ""       # valid, relative filepath to basepath
-        self.file_name = ""
-        self.ext = ""
-        self.fnp = ""        # 'path/filename.ext' as URL not filesys
-
-        # metadata
-        self.metadata = dict(tags=[],
-                             date="",
-                             year="",
-                             month="",
-                             mmm="",
-                             mm="",
-                             day="")
-        self.tags = []       # tag data as list
-        self.date = ""       # date as object
-        self.year = ""       # yyyy
-        self.month = ""      # month, [mmm|mm]
-        self.mmm = ""        # month mmm, UC
-        self.mm = ""         # month mm, string, 0 padding
-        self.day = ""        # day, dd, string, 0 padding
+                         
+        # body data
+        self.body_data = dict(title="",    # title, 40 char limit
+                              abstract="", # 120 char summary
+                              summary="",  # 100 word summary
+                              content=[])  # list of content
+        # file data
+        self.file_data = dict(path="",     # valid, relative fp to basepath
+                              name="",
+                              ext="",
+                              fpn="")      # path/filename.ext as url !filesys
+        # meta data
+        self.meta_data = dict(tags=[],
+                              date="",
+                              year="",
+                              month="",
+                              mmm="",
+                              mm="",
+                              day="",
+                              is_index=False)
+                         
     # --- collect data ---
     #
     def header(self, content):
@@ -51,11 +44,14 @@ class Page:
     def body(self, title, abstract, content):
         """body of page"""
         if title:
-            self.title = title
+            #self.title = title
+            self.body_data['title'] = title
             if abstract:
-                self.abstract = abstract
+                #self.abstract = abstract
+                self.body_data['abstract'] = abstract
                 if content: 
-                    self.content = content # optional content
+                    #self.content = content # optional content
+                    self.body_data['content'] = content
                     return True # all ok, else fail
         return False
     def footer(self, content):
@@ -66,29 +62,65 @@ class Page:
         return False
     def filename(self, path, name, ext):
         """build page filename with path, name and ext"""
+        status = False
         if os.path.isdir(path):
-            self.path = path
             if ext in ['html', 'htm']:
                 if name:
-                    self.file_name = "%s.%s" % (name, ext)
-                    self.fpn = "%s/%s" % (self.path, self.file_name)
-                    return True
-        return False
+                    self.file_data['path'] = path
+                    self.file_data['ext'] = ext
+                    self.file_data['name'] = "%s.%s" % (name, ext)
+                    self.file_data['fpn'] = "%s/%s" % (self.file_data['path'], 
+                                                       self.file_data['name'])
+                    status = True
+        return status
     def metadata(self, **kwargs):
         """
         lots of metadata available, pass in as
-        keyword arguments
+        keyword arguments foo="bar", foobar="", bar=foo 
+        test input keys against meta_data dict, return
+        true, assign data to key if not empty
         """
-        if kwargs.key in self.metadata.keys():
-            for arg in kwargs:
-                    self.metadata[arg.key] = arg.value
-            return True
-        return False
+        status = False
+        for arg in kwargs:
+            if arg in self.meta_data.keys():
+                if kwargs[arg]:
+                    self.meta_data[arg] = kwargs[arg]
+                    status = True
+        return status
+    #
     # --- end collect data ---
+    # --- call data
+    def get(self, dtype, key):
+        """return data in data by type or F"""
+        data = False
+        if dtype in ['meta','file','body']:
+            if dtype == 'meta':
+                if key in self.meta_data:
+                    data = self.meta_data[key]
+            elif dtype == 'file':
+                if key in self.file_data:
+                    data = self.file_data[key]
+            elif dtype == 'body':
+                if key in self.body_data:
+                    data = self.body_data[key]
+            else:
+                pass
+        return data
+    def get_meta(self, key):
+        """return meta_data by key or F"""
+        return self.get('meta', key)
+    def get_file(self, key):
+        """return file_data by key or F"""
+        return self.get('fire', key)
+    def get_body(self, key):
+        """return body_data by key or F"""
+        return self.get('body', key)
+    # --- end call data
     # --- build ---
     def build(self):
         """"build a page from bits of data"""
-        pass
+        # index page OR content page
+        
     # --- show ---
     def render(self):
         """render page, save as file"""

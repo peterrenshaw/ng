@@ -23,11 +23,12 @@ class TestPage(unittest.TestCase):
     # init
     def test_page_init(self):
         self.assertTrue(self.p)
-    # adding data
+    # header
     def test_header_ok(self):
         self.assertTrue(self.p.header("content"))
     def test_header_fail(self):
         self.assertFalse(self.p.header(""))
+    # body
     def test_body_ok(self):
         self.assertTrue(self.p.body("title","abstract","content"))
     def test_body_none_ok(self):
@@ -40,6 +41,7 @@ class TestPage(unittest.TestCase):
         self.assertFalse(self.p.body(title="",abstract="abstract",content="content"))
     def test_body_fail(self):
         self.assertFalse(self.p.body("","",""))
+    # filename
     def test_filename_ok(self):
         self.assertTrue(self.p.filename(os.curdir, 'filename','html'))
     def test_filename_path_fail(self):
@@ -48,11 +50,46 @@ class TestPage(unittest.TestCase):
         self.assertFalse(self.p.filename(os.curdir, '','htm'))
     def test_filename_est_fail(self):
         self.assertFalse(self.p.filename(os.curdir, 'filename','XHTML'))
+    # footer
     def test_footer_ok(self):
         self.assertTrue(self.p.footer("content"))
     def test_footer_fail(self):
         self.assertFalse(self.p.footer(""))
-    
+    # metadata
+    def test_metadata_ok(self):
+        self.assertTrue(self.p.metadata(tags=['this','that','them','us']))
+    def test_metadata_fail(self):
+        self.assertFalse(self.p.metadata(foo="this isn't a valid key"))
+    def test_metadata_update_data_ok(self):
+        """set meta_data['year'] to 2012, update to 2013 & compare, T"""
+        update_year = "2013"
+        self.assertTrue(self.p.metadata(tags=['this','that','them','us'], 
+                                        year="2012"))
+        self.assertTrue(self.p.metadata(year=update_year))
+        self.assertEqual(update_year, self.p.meta_data['year'])
+    def test_metadata_update_data_fail(self):
+        """blank update shouldn't update existing data"""
+        update_year = ""
+        self.assertTrue(self.p.metadata(tags=['this','that','them','us'], 
+                                        year="2012"))
+        #print("%s %s" % (update_year, self.p.meta_data['year']))
+        self.assertFalse(self.p.metadata(year=update_year))
+        #print("%s %s" % (update_year, self.p.meta_data['year']))
+        self.assertNotEqual(update_year, self.p.meta_data['year'])
+    # get
+    def test_get_ok(self):
+        self.assertFalse(self.p.get('meta','is_index'))
+    def test_get_empty_fail(self):
+        self.assertFalse(self.p.get("",""))
+    def test_get_body_ok(self):
+        self.p.body('title','abstract','content')
+        self.assertTrue(self.p.get_body('title'))
+    def test_get_meta_ok(self):
+        self.p.metadata(tags=['foo','bar','foobar'])
+        self.assertTrue(self.p.get_meta('tags'))
+    def test_get_file_ok(self):
+        """remember correct extension enforced"""
+        self.assertTrue(self.p.filename(path=os.curdir, name='foo',ext='html'))
 
 
 #---
@@ -74,7 +111,15 @@ def suite():
              'test_filename_ok',
              'test_filename_path_fail',
              'test_filename_filename_fail',
-             'test_filename_est_fail']
+             'test_filename_est_fail',
+             'test_metadata_ok',
+             'test_metadata_fail',
+             'test_metadata_update_data_ok',
+             'test_get_ok',
+             'test_get_empty_fail',
+             'test_get_body_ok',
+             'test_get_meta_ok',
+             'test_get_file_ok']
 
     return unittest.TestSuite(map(TestPage, tests))
 

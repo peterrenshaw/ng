@@ -18,4 +18,7 @@ markdown: True
 * building hack_page.Page 
 - added tests
 
+2013OOCT
+* lots of work
+
 vim: ff=unix:ts=4:sw=4:tw=78:noai:expandtab
