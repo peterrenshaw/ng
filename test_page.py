@@ -16,7 +16,8 @@ import hack_page
 
 class TestPage(unittest.TestCase):
     def setUp(self):
-        self.p = hack_page.Page()
+        self.is_index = False
+        self.p = hack_page.Page(self.is_index)
     def tearDown(self):
         self.p = None
 
