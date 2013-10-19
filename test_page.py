@@ -16,7 +16,9 @@ import hack_page
 
 class TestPage(unittest.TestCase):
     def setUp(self):
-        self.is_index = False
+        self.is_index = False  # is current page an index page (ie:
+                               # yyyy/mmm/index.html or just ord
+                               # page?
         self.p = hack_page.Page(self.is_index)
     def tearDown(self):
         self.p = None

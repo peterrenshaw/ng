@@ -19,12 +19,17 @@ class Page:
         self.body_data = dict(title="",    # title, 40 char limit
                               abstract="", # 120 char summary
                               summary="",  # 100 word summary
-                              content=[])  # list of content
+                              content="",  # list of content
+                              template="") # template
         # file data
         self.file_data = dict(path="",     # valid, relative fp to basepath
                               name="",
                               ext="",
                               filepathname="")      # path/filename.ext as url !filesys
+
+        # tool data
+        self.tool_data = dict(tool="nextgen.ng",
+                              version="0.1")
         # meta data
         self.meta_data = dict(author="",
                               tags=[],
@@ -44,16 +49,18 @@ class Page:
             self.__header = content
             return True
         return False
-    def body(self, title, abstract, content):
+    def body(self, title, abstract, content, template):
         """body of page"""
         status = False
         if title:
             if abstract:
                 if content:
-                    self.body_data['title'] = title
-                    self.body_data['abstract'] = abstract
-                    self.body_data['content'] = content
-                    status = True # all ok, else fail
+                    if template: 
+                        self.body_data['title'] = title
+                        self.body_data['abstract'] = abstract
+                        self.body_data['content'] = content
+                        self.body_data['template'] = template
+                        status = True # all ok, else fail
         return status
     def footer(self, content):
         """html/text template for footer"""
@@ -94,7 +101,7 @@ class Page:
     def get(self, dtype, key):
         """return data in data by type or F"""
         data = False
-        if dtype in ['meta','file','body']:
+        if dtype in ['meta','file','body','tool']:
             if dtype == 'meta':
                 if key in self.meta_data:
                     data = self.meta_data[key]
@@ -104,6 +111,9 @@ class Page:
             elif dtype == 'body':
                 if key in self.body_data:
                     data = self.body_data[key]
+            elif dtype == 'tool':
+                if key in self.tool_data:
+                    data = self.tool_data[key]
             else:
                 pass
         return data
@@ -116,6 +126,9 @@ class Page:
     def get_body(self, key):
         """return body_data by key or F"""
         return self.get('body', key)
+    def get_tool(self, key):
+        """return tool_data by key or F"""
+        return self.get('tool', key)
     # --- end call data
     def build_template(self, template, data):
         """given template and data, return substituted str"""
@@ -141,34 +154,52 @@ class Page:
                               abstract=self.get_body('abstract'), 
                               year=self.get_meta('year'),
                               mmm=self.get_meta('mmm'),
-                              day=self.get_meta('day'))
+                              mm=self.get_meta('mm'),
+                              day=self.get_meta('day'),
+                              tool=self.get_tool('tool'),
+                              version=self.get_tool('version'))
             header = self.build_template(self.__header, header_map)
             
             # build content
-            # assuming no templating in content
-            content = self.get_body('content')
+            content_map = dict(title=self.get_body('title'),
+                               img_url="http://www.flickr.com/photos/bootload/7419372302/",
+                               img_src="http://farm9.staticflickr.com/8154/7419372302_f34e56a94c.jpg",
+                               dt_format="Thursday, 19 July 2012 09:41",
+                               abstract=self.get_body('abstract'),
+                               description=self.get_body('description'),
+                               body=self.get_body('content'),
+                               site="seldomlogical.com")
 
+            # assuming no templating in content
+            content = self.build_template(self.get_body('template'), content_map)
+            contents = []
+            for line in content:
+                line.strip()
+                line.replace("\t","")
+                line.replace("\n","")
+                contents.append(line)
+            
             # build footer
             # assuming no templating in footer
             footer = "%s" % self.__footer
 
-            try:
-                print("writing to <%s>" % self.get_file('filepathname'))
-                with open(self.get_file('filepathname'),'wt') as f:
-                    for line in header:
-                        f.write("%s\n" % line)
-                    if content:
-                        f.write(content)
-                    if footer:
-                        f.write(footer)
-                    print("written")
-                    f.close()
-            except:
-                data = ""
-                if f: f.close()
-                return False
-            else:
-                return True
+            #try:
+            print("writing to <%s>" % self.get_file('filepathname'))
+            with open(self.get_file('filepathname'),'wt') as f:
+                for line in header:
+                    f.write("%s\n" % line)
+                if contents:
+                    for line in contents:
+                        f.write(line)
+                if footer:
+                    f.write(footer)
+            f.close()
+            #except:
+            #    data = ""
+            #    if f: f.close()
+            #    return False
+            #else:
+            return True
         else:
             # index page
             pass
@@ -178,35 +209,45 @@ class Page:
 def main():
     destination = 'E:\\blog\\seldomlogical'
 
-    h = ""
+    header = ""
     hp = os.path.join(os.curdir, 'source', 'partials', 'header.html')
     with open(hp, encoding='utf-8') as f:
-        h = f.read()
-    
+        header = f.read()
+    f.close()
 
-    ft = ""
+    footer = ""
     fp = os.path.join(os.curdir, 'source', 'partials', 'footer.html')
     with open(fp, encoding='utf-8') as f:
-        ft = f.read()
-   
-    c = ""
+        footer = f.read()
+    f.close()    
+
+    tpl = ""
+    tp = os.path.join(os.curdir, 'source', 'partials', 'content.html')
+    with open(tp, encoding='utf-8') as f:
+        tpl = f.read()
+    f.close()
+
+    content = ""
     cp = os.path.join(os.curdir, 'source', 'page.txt')
     with open(cp, encoding='utf-8') as f:
-        c = f.read()
+        content = f.read()
+    f.close()
 
-    t = "Hello world"
-    a = "A quick hello world hack. Not much too look at but you have to start somewhere."
+    title = "Hello world"
+    abstract = "A quick hello world hack. Not much too look at but you have to start somewhere."
     is_index=False
 
     p = Page(is_index)
-    p.header(h)
-    p.footer(ft)
-    if p.body(title=t, abstract=a, content=c):
-        if p.filename(path=destination, name="PAGE", ext="html"):
+    p.header(header)
+    p.footer(footer)
+    if p.body(title=title, abstract=abstract, content=content, template=tpl):
+        if p.filename(path=destination, name="index", ext="html"):
             if p.metadata(tags=['tag1','tag2'],author="peterrenshaw",
                           year="2013",mm="10",mmm="OCT",day="17"):
                 if p.render():
                     print("ok")
+                else:
+                    print("bugger")
 
 #---
 # main app entry point
