@@ -10,17 +10,18 @@ from string import Template
 class Page:
     def __init__(self, is_index):
         """initialise the Page"""
+        self.is_index = (True if is_index else False)
         # basic page
         self.__header = ""     # template
         self.__footer = ""     # template
         self.__body = ""       # container for body
                          
         # body data
-        self.body_data = dict(title="",    # title, 40 char limit
-                              abstract="", # 120 char summary
-                              summary="",  # 100 word summary
-                              content="",  # list of content
-                              template="") # template
+        self.body_data = dict(title="",     # title, 40 char limit
+                              abstract="",  # 120 char summary
+                              summary="",   # 100 word summary
+                              content="",   # list of content
+                              template="")  # template
         # file data
         self.file_data = dict(path="",     # valid, relative fp to basepath
                               name="",
@@ -31,15 +32,22 @@ class Page:
         self.tool_data = dict(tool="nextgen.ng",
                               version="0.1")
         # meta data
-        self.meta_data = dict(author="",
-                              tags=[],
-                              date="",
-                              year="",
-                              month="",
-                              mmm="",
-                              mm="",
-                              day="",
-                              is_index=(True if is_index else False))
+        self.meta_data = dict(author="",    # author
+                              site="",      # site name
+                              site_byline="", # site tagline 
+                              tags=[],      # tags as list
+                              date="",      # date in dt format
+                              year="",      # yyyy
+                              month="",     # mmm or mm
+                              mmm="",       # mmm = JAN,FEB etc
+                              mm="",        # mm = 01,02 etc zero padded
+                              day="",       # 01,02 etc zero padded
+                              img_url="",   # url to image
+                              img_src="",   # source path to image
+                              img_height="",# height image
+                              img_width="", # width image
+                              dt_format="", # date in string format
+                              is_index=self.is_index)
                          
     # --- collect data ---
     #
@@ -150,6 +158,8 @@ class Page:
 
             # build header
             header_map = dict(author=self.get_meta('author'),
+                              site=self.get_meta('site'),
+                              site_byline=self.get_meta('site_byline'),
                               title=self.get_body('title'),
                               abstract=self.get_body('abstract'), 
                               year=self.get_meta('year'),
@@ -162,14 +172,19 @@ class Page:
             
             # build content
             content_map = dict(title=self.get_body('title'),
-                               img_url="http://www.flickr.com/photos/bootload/7419372302/",
-                               img_src="http://farm9.staticflickr.com/8154/7419372302_f34e56a94c.jpg",
-                               dt_format="Thursday, 19 July 2012 09:41",
-                               abstract=self.get_body('abstract'),
+                               site=self.get_meta('site'),
+                               abstract=self.get_body('abstract'), 
                                description=self.get_body('description'),
                                body=self.get_body('content'),
-                               site="seldomlogical.com")
-
+                               year=self.get_meta('year'),
+                               mmm=self.get_meta('mmm'),
+                               mm=self.get_meta('mm'),
+                               day=self.get_meta('day'), 
+                               img_url=self.get_meta('img_url'),
+                               img_src=self.get_meta('img_src'),
+                               img_height=self.get_meta('img_height'),
+                               img_width=self.get_meta('img_width'),
+                               dt_format=self.get_meta('dt_format'))
             # assuming no templating in content
             content = self.build_template(self.get_body('template'), content_map)
             contents = []
@@ -233,8 +248,17 @@ def main():
         content = f.read()
     f.close()
 
+    author = "Peter Renshaw"
+    site = "Seldomlogical"
+    site_byline = "new ideas, ideal solutions are seldom logical. attaining a desired goal always is"
     title = "Hello world"
     abstract = "A quick hello world hack. Not much too look at but you have to start somewhere."
+    img_url = "http://www.flickr.com/photos/bootload/7419372302/"
+    img_src = "http://farm9.staticflickr.com/8154/7419372302_f34e56a94c.jpg"
+    img_height = "375"
+    img_width = "500"
+    dt_format = "Thursday, 19 July 2012 09:41"
+
     is_index=False
 
     p = Page(is_index)
@@ -242,8 +266,16 @@ def main():
     p.footer(footer)
     if p.body(title=title, abstract=abstract, content=content, template=tpl):
         if p.filename(path=destination, name="index", ext="html"):
-            if p.metadata(tags=['tag1','tag2'],author="peterrenshaw",
-                          year="2013",mm="10",mmm="OCT",day="17"):
+            if p.metadata(tags=['tag1','tag2'],
+                          author=author,
+                          year="2013",mm="10",mmm="OCT",day="17",
+                          img_url=img_url, 
+                          img_src=img_src,
+                          img_height=img_height, 
+                          img_width=img_width,
+                          dt_format=dt_format,
+                          site=site,
+                          site_byline=site_byline):
                 if p.render():
                     print("ok")
                 else:

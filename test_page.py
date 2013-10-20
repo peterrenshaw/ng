@@ -33,17 +33,17 @@ class TestPage(unittest.TestCase):
         self.assertFalse(self.p.header(""))
     # body
     def test_body_ok(self):
-        self.assertTrue(self.p.body("title","abstract","content"))
+        self.assertTrue(self.p.body("title","abstract","content","template"))
     def test_body_none_ok(self):
-        self.assertFalse(self.p.body(title="",abstract="",content=""))
+        self.assertFalse(self.p.body(title="",abstract="",content="",template=""))
     def test_body_no_abstract_fail(self):
-        self.assertFalse(self.p.body(title="title",abstract="",content="content"))
+        self.assertFalse(self.p.body(title="title",abstract="",content="content",template="template"))
     def test_body_no_content_fail(self):
-        self.assertFalse(self.p.body(title="title",abstract="abstract",content=""))
+        self.assertFalse(self.p.body(title="title",abstract="abstract",content="",template=""))
     def test_body_no_title_fail(self):
-        self.assertFalse(self.p.body(title="",abstract="abstract",content="content"))
+        self.assertFalse(self.p.body(title="",abstract="abstract",content="content",template=""))
     def test_body_fail(self):
-        self.assertFalse(self.p.body("","",""))
+        self.assertFalse(self.p.body("","","",""))
     # filename
     def test_filename_ok(self):
         self.assertTrue(self.p.filename(os.curdir, 'filename','html'))
@@ -85,7 +85,7 @@ class TestPage(unittest.TestCase):
     def test_get_empty_fail(self):
         self.assertFalse(self.p.get("",""))
     def test_get_body_ok(self):
-        self.p.body('title','abstract','content')
+        self.p.body('title','abstract','content','template')
         self.assertTrue(self.p.get_body('title'))
     def test_get_meta_ok(self):
         self.p.metadata(tags=['foo','bar','foobar'])
