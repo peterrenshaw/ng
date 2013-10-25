@@ -11,6 +11,8 @@
 # src : <http://docs.python.org/3.2/howto/sorting.html>
 #===
 
+
+import sys
 import time
 import datetime
 
@@ -39,16 +41,15 @@ class Container:
     def __init__(self):
         """initialise variables"""
         self.index = []
-        self.data = {}
     def add(self, **kwargs):
         """
         enter multiple key=value items, convert to dict
         save to master index - clear dict for next add
         """
-        self.data = {}
+        data = {}
         for key in kwargs:
-            self.data[key] = kwargs[key]
-        self.index.append(self.data)
+            data[key] = kwargs[key]
+        self.index.append(data)
         return True
     def sort(self, term, order=True):
         """return copy of list of sorted items by key or F"""
@@ -65,7 +66,6 @@ class Container:
     def clear(self):
         """clears index list"""
         self.index = []
-        self.data = {}
     def all(self):
         """all index data in list"""
         return self.index
@@ -100,6 +100,12 @@ def main():
     c.add(epoch=dt_ymdhm2_epoch(year=1971,month=8,day=21,hour=0,minute=0),
            title='goo gaa',url='http://bbn.com',
            year=1971,month=8,day=21, hour=0, minute=0)
+
+
+    # hack test to halt if problem
+    if not c.sort('epoch'):
+        print("error: we have a problem sorting")
+        sys.exit(1)
 
     # sort by time, epoch is dirty hack to ensure
     # datetime is sorted correctly

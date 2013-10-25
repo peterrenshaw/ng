@@ -12,6 +12,7 @@ import unittest
 import test_ng 
 import test_date
 import test_page
+import test_container
 
 
 #---
@@ -23,11 +24,13 @@ def main():
     suite_date = test_date.suite()
     suite_ng = test_ng.suite()
     suite_page = test_page.suite()
+    suite_container = test_container.suite()
 
     # add the suite to be tested here
     alltests = unittest.TestSuite((suite_date,
                                    suite_ng,
-                                   suite_page))
+                                   suite_page,
+                                   suite_container))
 
     # run the suite
     runner = unittest.TextTestRunner()

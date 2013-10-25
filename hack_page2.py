@@ -9,13 +9,24 @@ from string import Template
 
 
 # --- time tools ---
-#
+
+#---
+# dt_ymdhm2_epoch: pass in y/m/d/h:m spits out epoch
+#---
+def dt_ymdhm2_epoch(year,month,day,hour,minute): # TODO add optional seconds
+    """return datetime in epoch format defined by y,m,d,h,m"""
+    t = datetime.datetime(year,month,day,hour,minute)
+    return time.mktime(t.timetuple())
+#---
 # dt_epoch_utc: epoch, utc
+#---
 def dt_epoch_utc():
     """return datetime in UTC epoch format"""
     t = datetime.datetime.utcnow()
     return time.mktime(t.timetuple())
+#---
 # dt_datetime_strf: format return using strf strings
+#---
 def dt_datetime_strf(strf_format, is_upper=False):
     """datetime formatted using STRF string format"""
     dt = datetime.datetime.now().strftime(strf_format)
@@ -25,8 +36,56 @@ def dt_datetime_strf(strf_format, is_upper=False):
 # --- end time tools ---
 
 
+# ---- Container object ---
+#
 
-
+#===
+# name: Container
+# date: 2013OCT24
+# prog: pr
+# desc: using only list and dictionary, sort the list of
+#       dictionary values by key. The object allows you to 
+#       add multiple dictionaries of data (test) then sort by 
+#       existing key. 
+#
+#       funky :)
+#===
+class Container:
+    def __init__(self):
+        """initialise variables"""
+        self.index = []
+    def add(self, **kwargs):
+        """
+        enter multiple key=value items, convert to dict
+        save to master index - clear dict for next add
+        """
+        data = {}
+        if kwargs:
+            for key in kwargs:
+                data[key] = kwargs[key]
+            self.index.append(data)
+            return True
+        return False
+    def sort(self, term, order=True):
+        """return copy of list of sorted items by key or F"""
+        # is *search term* in first item, of index?
+        if term in self.index[0]:
+            # force *order* to T/F
+            if order is True or order is False: 
+                # sort all dicts in list, by term and order
+                items = sorted(self.all(), 
+                               key = lambda data: data[term], 
+                               reverse = order)
+                return items
+        return False
+    def clear(self):
+        """clears index list"""
+        self.index = []
+    def all(self):
+        """all index data in list"""
+        return self.index
+#
+# --- end container object --- 
 
 
 # --- Page object ---
@@ -430,7 +489,7 @@ def main():
         content = f.read()
     f.close()
 
-
+    print('start')
     p = Page(is_index)
     p.header(header)
     p.footer(footer)
@@ -453,6 +512,7 @@ def main():
                site_byline=site_byline)
     p.body(title=title, abstract=abstract, content=content,template=tpl)
     p.render()
+    print('ok')
 
 #---
 # main app entry point
