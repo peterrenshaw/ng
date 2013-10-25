@@ -132,6 +132,14 @@ class TestContainer(unittest.TestCase):
            day=12, hour=12, minute=12)
         data = self.c.sort('')
         self.assertFalse(data)
+    def test_cont_add_incompat_dicts(self):
+        """test for incompatiable dictionaries added"""
+        self.c.add(title='after berlin', album='Trans', year=1982, artist='neil young')
+        status = self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month=10,day=10,hour=10,minute=10),
+           title='The latest post',url='http://foo.com/bar/foobar',year=2010,
+           month=10,day=10, hour=10, minute=10)
+        self.assertFalse(status)
+
 
 
 #---
@@ -148,7 +156,8 @@ def suite():
              'test_cont_sort_order_ok',
              'test_cont_sort_order_reverse_ok',
              'test_cont_sort_term_fail',
-             'test_cont_sort_no_term_fail'
+             'test_cont_sort_no_term_fail',
+             'test_cont_add_incompat_dicts'
             ]
 
     return unittest.TestSuite(map(TestContainer, tests))

@@ -46,7 +46,8 @@ def dt_datetime_strf(strf_format, is_upper=False):
 # desc: using only list and dictionary, sort the list of
 #       dictionary values by key. The object allows you to 
 #       add multiple dictionaries of data (test) then sort by 
-#       existing key. 
+#       existing key. Add a dictionary, every dictionary after
+#       this must have the same keys, this is enforced on add.
 #
 #       funky :)
 #===
@@ -58,14 +59,33 @@ class Container:
         """
         enter multiple key=value items, convert to dict
         save to master index - clear dict for next add
+        First add will dicate all other keys allowed
         """
         data = {}
         if kwargs:
             for key in kwargs:
-                data[key] = kwargs[key]
+                # is key valid ie: is key found 
+                # in first add? are sucessive add's
+                # have same keys as first?
+                if self.valid(key):
+                    data[key] = kwargs[key]
+                else:
+                    return False
             self.index.append(data)
             return True
         return False
+    def valid(self, key):
+        """
+        is every keys entered exactly same as 
+        keys in first add? if so T, else F
+        """
+        if len(self.index) >= 1:
+            if key in self.index[0].keys():
+                return True
+            else:
+                return False
+        else:
+            return True
     def sort(self, term, order=True):
         """return copy of list of sorted items by key or F"""
         # is *search term* in first item, of index?
