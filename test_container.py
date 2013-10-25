@@ -141,7 +141,6 @@ class TestContainer(unittest.TestCase):
         self.assertFalse(status)
 
 
-
 #---
 # suite: allows all tests run here to be run externally at 'test_all.py'
 #---
