@@ -3,14 +3,27 @@
 
 
 import os
+import time
 import string
+import datetime
 from string import Template
 
+
+def db_datetime_utc():
+    """store datetime in UTC epoch format"""
+    t = datetime.datetime.utcnow()
+    return time.mktime(t.timetuple())
+def dt_datetime_strf(strf_fmt, is_upper=False):
+    dt = datetime.datetime.now().strftime(strf_fmt)
+    if is_upper: dt = dt.upper()
+    return dt
 
 class Page:
     def __init__(self, is_index):
         """initialise the Page"""
         self.is_index = (True if is_index else False)
+        self.index = []
+
         # basic page
         self.__header = ""     # template
         self.__footer = ""     # template
@@ -23,30 +36,36 @@ class Page:
                               content="",   # list of content
                               template="")  # template
         # file data
-        self.file_data = dict(path="",     # valid, relative fp to basepath
+        self.file_data = dict(basepath="",
+                              path="",     # valid, relative fp to basepath
                               name="",
                               ext="",
-                              filepathname="")      # path/filename.ext as url !filesys
+                              filepathname="") # path/filename.ext as url !filesys
 
         # tool data
         self.tool_data = dict(tool="nextgen.ng",
                               version="0.1")
+
         # meta data
         self.meta_data = dict(author="",    # author
                               site="",      # site name
                               site_byline="", # site tagline 
                               tags=[],      # tags as list
+                              epoch="",
                               date="",      # date in dt format
                               year="",      # yyyy
                               month="",     # mmm or mm
                               mmm="",       # mmm = JAN,FEB etc
                               mm="",        # mm = 01,02 etc zero padded
                               day="",       # 01,02 etc zero padded
+                              hour="",      # hour in HH format
+                              minute="",    # minute in MM format
+                              dt_format="", # date in string format
+                              dt_epoch="",  # date in epoch format
                               img_url="",   # url to image
                               img_src="",   # source path to image
                               img_height="",# height image
                               img_width="", # width image
-                              dt_format="", # date in string format
                               is_index=self.is_index)
                          
     # --- collect data ---
@@ -152,10 +171,9 @@ class Page:
     def render(self):
         """"build a page from bits of data"""
         # index page OR content page
+        print("is_index=%s" % self.get_meta('is_index'))
         if not self.get_meta('is_index'):
             # normal content page
-            #
-
             # build header
             header_map = dict(author=self.get_meta('author'),
                               site=self.get_meta('site'),
@@ -185,44 +203,93 @@ class Page:
                                img_height=self.get_meta('img_height'),
                                img_width=self.get_meta('img_width'),
                                dt_format=self.get_meta('dt_format'))
-            # assuming no templating in content
-            content = self.build_template(self.get_body('template'), content_map)
-            contents = []
-            for line in content:
-                line.strip()
-                line.replace("\t","")
-                line.replace("\n","")
-                contents.append(line)
+            contents = self.build_template(self.get_body('template'), content_map)
             
             # build footer
             # assuming no templating in footer
             footer = "%s" % self.__footer
 
-            #try:
-            print("writing to <%s>" % self.get_file('filepathname'))
-            with open(self.get_file('filepathname'),'wt') as f:
-                for line in header:
-                    f.write("%s\n" % line)
-                if contents:
-                    for line in contents:
-                        f.write(line)
-                if footer:
-                    f.write(footer)
-            f.close()
-            #except:
-            #    data = ""
-            #    if f: f.close()
-            #    return False
-            #else:
-            return True
+            try:
+                #print("writing to <%s>" % self.get_file('filepathname'))
+                with open(self.get_file('filepathname'),'wt') as f:
+                    for line in header:
+                        f.write("%s\n" % line)
+                    if contents:
+                        for line in contents:
+                             f.write(line)
+                    if footer:
+                        f.write(footer)
+                f.close()
+            except:
+                data = ""
+                if f: f.close()
+                return False
+            else:
+                return True
         else:
             # index page
-            pass
+            fp = os.path.join(self.get_file('basepath'),
+                              self.get_meta('year'), 
+                              self.get_meta('mmm'),
+                              self.get_meta('day'),
+                              self.get_file('name'))
+            link_map = dict(title=self.get_body('title'),
+                            abstract=self.get_body('abstract'),
+                            file_path=fp,
+                            year=self.get_meta('year'),
+                            mmm=self.get_meta('mmm'),
+                            day=self.get_meta('day'),
+                            dt_format=self.get_meta('dt_format'),
+                            dt_epoch=self.get_meta('dt_epoch'),
+                            hour=self.get_meta('hour'),
+                            minute=self.get_meta('minute'))
+
+            # call list of link data
+            # sorted by?
+            self.index.sort()
+            print(link_map)
+            print("len=%s" % len(self.index))
+            for link in self.index:
+                print(link, fp)
+                #try:
+                #print("writing to <%s>" % self.get_file('filepathname'))
+                #    with open(self.get_file(fp),'wt') as f:
+                #        pass
+                #f.close()
+                #except:
+                #    if f: f.close()
+                
+            #     open file to write
+            #         title = index.html
+            #         path = yyyy/mmm/dd
+            #         write index_link
+            return True
     # --- render ---
 
 
 def main():
     destination = 'E:\\blog\\seldomlogical'
+
+
+    author = "Peter Renshaw" 
+    site = "Seldomlogical"
+    site_byline = "new ideas, ideal solutions are seldom logical. attaining a desired goal always is"
+    title = "Hello world"
+    abstract = "A quick hello world hack. Not much too look at but you have to start somewhere."
+    img_url = "http://www.flickr.com/photos/bootload/7419372302/"
+    img_src = "http://farm9.staticflickr.com/8154/7419372302_f34e56a94c.jpg"
+    img_height = "375"
+    img_width = "500"
+
+
+    # "Thursday, 19 July 2012 09:41"
+    str_full = "%A, %d %B %Y %H:%M"
+    dt_full = dt_datetime_strf(str_full) 
+    str_24hour = dt_datetime_strf("%H")
+    str_minute = dt_datetime_strf("%M")
+    dt_epoch = db_datetime_utc()
+    is_index=True
+
 
     header = ""
     hp = os.path.join(os.curdir, 'source', 'partials', 'header.html')
@@ -248,19 +315,6 @@ def main():
         content = f.read()
     f.close()
 
-    author = "Peter Renshaw"
-    site = "Seldomlogical"
-    site_byline = "new ideas, ideal solutions are seldom logical. attaining a desired goal always is"
-    title = "Hello world"
-    abstract = "A quick hello world hack. Not much too look at but you have to start somewhere."
-    img_url = "http://www.flickr.com/photos/bootload/7419372302/"
-    img_src = "http://farm9.staticflickr.com/8154/7419372302_f34e56a94c.jpg"
-    img_height = "375"
-    img_width = "500"
-    dt_format = "Thursday, 19 July 2012 09:41"
-
-    is_index=False
-
     p = Page(is_index)
     p.header(header)
     p.footer(footer)
@@ -268,14 +322,18 @@ def main():
         if p.filename(path=destination, name="index", ext="html"):
             if p.metadata(tags=['tag1','tag2'],
                           author=author,
+                          site=site,
+                          site_byline=site_byline,
                           year="2013",mm="10",mmm="OCT",day="17",
                           img_url=img_url, 
                           img_src=img_src,
                           img_height=img_height, 
                           img_width=img_width,
-                          dt_format=dt_format,
-                          site=site,
-                          site_byline=site_byline):
+                          dt_format=dt_full,
+                          dt_epoch=dt_epoch,
+                          hour=str_24hour,
+                          minute=str_minute,
+                          relpath=destination):
                 if p.render():
                     print("ok")
                 else:

@@ -171,6 +171,7 @@ class Nextgen:
         self.ext = ["md","markdown","txt"]
         self.filepath = []
         self.post = []
+        self.index = []
         self.yaml = []
     # extract
     def extract_content(self, yaml_count, data):
@@ -342,6 +343,9 @@ class Nextgen:
             # only if there's a file
             if len(self.filepaths) > 0: # this is a list
                 data = ""
+                index_data = [] # build list of index data
+                # epoch, title, abstract, year, mmm, day, hh, mm, dt, path
+                
                 # we have the filename, now the contents
                 for fpn in self.filepaths:
                     data = self.read_file_content(fpn)
@@ -350,6 +354,7 @@ class Nextgen:
                         tags = []
                         title = ""
                         description = ""
+                        abstract = "" # TODO where is this being extracted?
                         date = ""
                         is_markdown = False
                         is_displayed = False
@@ -374,9 +379,13 @@ class Nextgen:
                                 # displayed
                                 if 'displayed' in yaml:
                                     is_displayed = yaml['displayed']
+                                # TODO hey bonehead!
+                                #      are you extracting date from the 
+                                #      filename? if not, do so
                                 if 'date' in yaml:
                                     date = yaml['date']
                                 else:
+                                    # --- OVER HERE ---
                                     date = self.date8601.now()
 
                         # --- build list of file data --- 
@@ -402,6 +411,7 @@ class Nextgen:
                             tags = self.update_tags(hour, tags)
                             tags = self.update_tags(minute, tags)
 
+
                             # post content
                             yml_count = len(self.yaml)
                             c = self.extract_content(yml_count, data)
@@ -418,11 +428,6 @@ class Nextgen:
                                  hour=hour,           # hh
                                  minute=minute,       # mm
                                  tags=tags,           # list of tags
-                                 path_yyyy="",        # use later year
-                                 path_yyyymm="",      # use later year, mm
-                                 path_yyyymmm="",     # use later year, mmm
-                                 path_yyyymmdd="",    # use later year,mm,dd
-                                 path_yyyymmmdd="",   # use later year,mmm,dd
                                  postpath="",         # post path
                                  title=title,         # post title
                                  description=description, # 200 char summary
@@ -432,9 +437,22 @@ class Nextgen:
                                  displayed=is_displayed)  # bool, do u show?
 
                             self.post.append(p)                            
-                            # --- build list of post data ---
-                        else:
-                            return False
+                            # --- end build ---
+                            # --- build dict of link data ---
+                            link = dict(title=title,
+                                        abstract=abstract,
+                                        file_path="",
+                                        year="",
+                                        mmm=month_mmm,
+                                        day=day,
+                                        dt_format="",
+                                        dt_epoch="",
+                                        hour=hour,
+                                        minute=minute)
+
+                            self.index.append(link)
+                            # --- end build
+            # TODO problem here
             return True
         else:
             return False
