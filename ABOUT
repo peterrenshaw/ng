@@ -1,0 +1,28 @@
+
+
+  name ABOUT.txt
+  date 2013OCT25
+  prog @peterrenshaw
+  desc Nextgen: A static blog engine.
+
+
+Abstract
+
+    todo
+   
+Why?
+
+    todo
+    
+Resources
+
+[1] Title created with an ASCII text generator using 'slant' and 'stretch=Yes". 
+The code is based on Figlet which can be found here ~ <http://www.figlet.org/>
+[Last accessed: Sunday 4th August, 2013]
+<http://www.network-science.de/ascii/>
+
+
+Comment: Brad Lemon - This structure more usable. A javascript app would be ideal. 
+Just so long as the front end is dummy-proof.
+
+# vim: ff=unix:ts=4:sw=4:tw=78:noai:expandtab

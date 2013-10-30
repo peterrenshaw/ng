@@ -1,0 +1,22 @@
+
+
+  name TODO
+  date 2013OCT25
+  prog @peterrenshaw
+  desc: Nextgen: A static blog generator
+
+
+2013OCT25
+* hack time
+- blocks built, time to put them together
+
+
+Resources
+
+[1] Title created with an ASCII text generator using 'slant' and 'stretch=Yes". 
+The code is based on Figlet which can be found here ~ <http://www.figlet.org/>
+[Last accessed: Sunday 4th August, 2013]
+<http://www.network-science.de/ascii/>
+
+
+# vim: ff=unix:ts=4:sw=4:tw=78:noai:expandtab
