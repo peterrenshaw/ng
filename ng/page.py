@@ -66,7 +66,7 @@ class Container:
                 return False
         else:
             return True
-    def sort(self, term, order=True):
+    def sort(self, term='epoch', order=True):
         """return copy of list of sorted items by key or F"""
         # is *search term* in first item, of index?
         #print("term=%s" % term)

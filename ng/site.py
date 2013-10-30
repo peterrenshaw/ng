@@ -532,11 +532,11 @@ class Nextgen:
 
                     # --- build pages ---
                     # page object
-                    ipage = ng.page.Page(is_index=True)
+                    page = ng.page.Page(is_index=True)
 
                     # templates
-                    ipage.header(tpl_header)
-                    ipage.footer(tpl_footer)
+                    page.header(tpl_header)
+                    page.footer(tpl_footer)
                     
                     # content of index
 
@@ -552,7 +552,7 @@ class Nextgen:
                                                       day=day,
                                                       hour=hour,
                                                       minute=minute)
-                    ipage.timedata(dt_epoch=dt_epoch,
+                    page.timedata(dt_epoch=dt_epoch,
                                    year=year,
                                    month_mm=month_mm,
                                    month_mmm=month_mmm,
@@ -561,7 +561,7 @@ class Nextgen:
                                    hour=hour,
                                    minute=minute,
                                    dt_strf=dt_strf)
-                    ipage.filedata(basepath=self.dest_dir,
+                    page.filedata(basepath=self.dest_dir,
                                    relpath=relpath,
                                    name=filename, 
                                    ext="html")
@@ -569,17 +569,15 @@ class Nextgen:
                           self.site['name'].replace(" ","").lower(),
                           post['year'], post['month_mm'], post['day'], 
                           post['hour'], post['minute']]
-                    ipage.metadata(tags=tags,
+                    page.metadata(tags=tags,
                                    author=self.site['author'],
                                    site_name=self.site['name'],
                                    site_byline=self.site['byline'],
                                    is_index=True)
-                    ipage.body(title=title,
+                    page.body(title=title,
                                abstract=abstract,
                                content=content,
                                template=tpl_content)
-                    self.index.append(ipage)
-                    ipage = None
                     if False:
                         print("=== TESTING ===")
                         status = not ng.tools.dt_is_valid_input(year, month_mm, day, hour, minute)

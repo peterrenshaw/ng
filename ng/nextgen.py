@@ -78,6 +78,11 @@ def main():
                             print("\n")
 
                         print("post")
+                        ng.link.sort(term='dt_epoch')
+                        for link in ng.link.all():
+                            print("%s/%s/%s %s" % 
+                                    (link['year'],link['month_mmm'],link['day'],
+                                     link['title']))
                         #for post in ng.post:
                         #    for key in post.keys():
                         #        print("\t%s" % key)
