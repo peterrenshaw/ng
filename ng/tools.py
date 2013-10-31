@@ -41,12 +41,10 @@ def dt_is_valid_input(year, month, day, hour, minute, min_year=1970):
 #---
 # dt_ymdhm2_epoch: pass in y/m/d/h:m spits out epoch
 #---
-def dt_ymdhm2_epoch(year, month_mm, day, hour, minute): # TODO add optional seconds
-    """return datetime in epoch format defined by y,m,d,h,m"""
-    #print("2 year=%s month=%s day=%s hour=%s minute=%s" % 
-    #            (year, month_mm, day, hour, minute))    
-    if dt_is_valid_input(year, month_mm, day, hour, minute):
-        t = datetime.datetime(year, month_mm, day, hour, minute)
+def dt_ymdhm2_epoch(year, month, day, hour, minute): # TODO add optional seconds
+    """return datetime in epoch format defined by y,m (mm format),d,h,m"""
+    if dt_is_valid_input(year, month, day, hour, minute):
+        t = datetime.datetime(year, month, day, hour, minute)
         return time.mktime(t.timetuple())
     else:
         return False
@@ -104,7 +102,7 @@ class DateIso8601:
         self.dt = datetime       # passed in date object
         self.is_valid = False    # is str_iso_8601 valid format?
         
-        self.epoch = 0.0
+        self.epoch = 0   # int because we use epoch to 
         self.year = 0
         self.month = 0
         self.month_mm = 0

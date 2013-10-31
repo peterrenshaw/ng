@@ -148,9 +148,10 @@ class Nextgen:
         return False
     # tags
     def update_tags(self, item, tags):
-        """update tag in tags list - remember, 
-           tag list returns unchanged, even on 
-           failure=
+        """
+        update tag in tags list - remember, 
+        tag list returns unchanged, even on 
+        failure=
         """
         if item:
             if item not in tags:    # no dupes
@@ -264,14 +265,14 @@ class Nextgen:
                 index_data = [] # build list of index data
                 
                 # TODO should be as config file & populated via 
-                #      method, otherwise just store
+                #      method, otherwise just store 
                 self.site = dict(author = "Peter Renshaw", 
-                                 name = "Seldomlogical",
+                                 name   = "Seldomlogical",
                                  byline = "new ideas, ideal \
-                                          solutions are seldom\
-                                          logical. attaining \
-                                          a desired goal \
-                                          always is")
+                                           solutions are seldom\
+                                           logical. attaining \
+                                           a desired goal \
+                                           always is")
                 
                 # we have the filename, now the contents
                 for fpn in self.filepaths:
@@ -297,7 +298,6 @@ class Nextgen:
                                 if 'tags' in yaml:
                                     tags = self.extract_yaml_tags(yaml['tags'])
                                 # title
-                                # filename
                                 if 'title' in yaml:
                                     # strip for display
                                     title = yaml['title']
@@ -377,8 +377,7 @@ class Nextgen:
                             yaml_count = len(self.yaml) if self.yaml else 0
                             c = self.extract_content(yaml_count, data)
                             # --- build dict of post data ---
-                            p = dict(#index=index_utc,     # utc epoch of post date
-                                 content=c,                # body of post
+                            p = dict(content=c,            # body of post
                                  basepath="",              # destination path
                                  filepath=filepath,        # filepath of post
                                  relpath=relpath,
@@ -543,7 +542,7 @@ class Nextgen:
                     # data
                     # year, month, day, hour, minute, [strf_format]
                     dt_epoch = ng.tools.dt_ymdhm2_epoch(year=year,
-                                                        month_mm=month_mm,
+                                                        month=month_mm,
                                                         day=day,
                                                         hour=hour,
                                                         minute=minute)

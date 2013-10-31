@@ -71,21 +71,17 @@ def main():
                         print("process")
                         print("index")
                         for index in ng.index:
-                            print("%s" % index.body_data)
+                            #print("%s" % index.body_data)
                             print("%s" % index.time_data)
-                            print("%s" % index.file_data)
-                            print("%s" % index.meta_data)
+                            #print("%s" % index.file_data)
+                            #print("%s" % index.meta_data)
                             print("\n")
 
                         print("post")
-                        ng.link.sort(term='dt_epoch')
-                        for link in ng.link.all():
-                            print("%s/%s/%s %s" % 
-                                    (link['year'],link['month_mmm'],link['day'],
-                                     link['title']))
-                        #for post in ng.post:
-                        #    for key in post.keys():
-                        #        print("\t%s" % key)
+                        for link in ng.link.sort(term='dt_epoch'):
+                            print("%s\t%s: %s" % 
+                                    (link['dt_epoch'], link['title'], link['abstract'][:40]))
+
                         save = ng.save()
                         if save:
                             print("save")
