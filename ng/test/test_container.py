@@ -10,10 +10,6 @@
 import os
 import unittest
 
-# TODO change this when rebuild 
-#import hack_page2
-#from hack_page2 import dt_ymdhm2_epoch
-
 
 import ng.page
 import ng.tools
@@ -32,47 +28,33 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(self.c)
     def test_cont_add_ok(self):
         """add is valid, return T else F"""
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2013,month_mm=10,day=1,hour=0,minute=0),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2013,month=10,day=1,hour=0,minute=0),
            title='Hello world #1',url='http://192.168.0.1',year=2013,month=4, 
            day=1, hour=0,minute=0)
         self.assertTrue(self.c.all())
     def test_cont_add_fail(self):
         """nothing to add, should be F"""
         self.assertFalse(self.c.add())
+    # clear
     def test_cont_clear_ok(self):
         """full list, clear returns nothing"""
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2013,month_mm=10,day=1,hour=0,minute=0),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2013,month=10,day=1,hour=0,minute=0),
            title='Hello world #1',url='http://192.168.0.1',year=2013,month=4, 
            day=1, hour=0,minute=0)
         self.assertFalse(self.c.clear())
-    def test_cont_all_ok(self):
-        """add N, return should return N items in list"""
-        # add 2
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2013,month_mm=10,day=1,hour=0,minute=0),
-           title='Hello world #1',url='http://192.168.0.1',year=2013,month=4, 
-           day=1, hour=0,minute=0)
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2013,month_mm=10,day=23,hour=0,minute=0),
-           title='The latest post',url='http://foo.com/bar/foobar',year=2013,
-           month=10,day=23, hour=0, minute=0)
-        length = len(self.c.all())
-        self.assertEqual(length, 2)
-        self.assertTrue(self.c.all())
-    def test_cont_all_empty_ok(self):
-        """empty list, should be lenght zero"""
-        length = len(self.c.all())
-        self.assertEqual(length, 0)
+    # sort
     def test_cont_sort_order_ok(self):
         """sorting on numbers, order should be as expected"""
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2011,month_mm=11,day=11,hour=11,minute=11),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2011,month=11,day=11,hour=11,minute=11),
            title='First post',url='http://foo.com/bar',year=2011,month=11,
            day=11, hour=11, minute=11)
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2001,month_mm=1,day=1,hour=1,minute=1),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2001,month=1,day=1,hour=1,minute=1),
            title='Hello world #1',url='http://192.168.0.1',year=2001,month=1, 
            day=1, hour=1,minute=1)
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month_mm=10,day=10,hour=10,minute=10),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month=10,day=10,hour=10,minute=10),
            title='The latest post',url='http://foo.com/bar/foobar',year=2010,
            month=10,day=10, hour=10, minute=10)
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2012,month_mm=12,day=12,hour=12,minute=12),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2012,month=12,day=12,hour=12,minute=12),
            title='Hello world #2',url='http://foo.com',year=2012,month=12,
            day=12, hour=12, minute=12)
         data = self.c.sort('epoch')
@@ -86,16 +68,16 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(epoch and year and month and day and hour and minute)
     def test_cont_sort_order_reverse_ok(self):
         """sorting on numbers, order should be as expected"""
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2011,month_mm=11,day=11,hour=11,minute=11),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2011,month=11,day=11,hour=11,minute=11),
            title='First post',url='http://foo.com/bar',year=2011,month=11,
            day=11, hour=11, minute=11)
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2001,month_mm=1,day=1,hour=1,minute=1),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2001,month=1,day=1,hour=1,minute=1),
            title='Hello world #1',url='http://192.168.0.1',year=2001,month=1, 
            day=1, hour=1,minute=1)
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month_mm=10,day=10,hour=10,minute=10),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month=10,day=10,hour=10,minute=10),
            title='The latest post',url='http://foo.com/bar/foobar',year=2010,
            month=10,day=10, hour=10, minute=10)
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2012,month_mm=12,day=12,hour=12,minute=12),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2012,month=12,day=12,hour=12,minute=12),
            title='Hello world #2',url='http://foo.com',year=2012,month=12,
            day=12, hour=12, minute=12)
         data = self.c.sort('epoch', order=False)
@@ -109,10 +91,10 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(epoch and year and month and day and hour and minute)
     def test_cont_sort_term_fail(self):
         """sort fails?"""
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month_mm=10,day=10,hour=10,minute=10),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month=10,day=10,hour=10,minute=10),
            title='The latest post',url='http://foo.com/bar/foobar',year=2010,
            month=10,day=10, hour=10, minute=10)
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2012,month_mm=12,day=12,hour=12,minute=12),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2012,month=12,day=12,hour=12,minute=12),
            title='Hello world #2',url='http://foo.com',year=2012,month=12,
            day=12, hour=12, minute=12)
         data = self.c.sort('epoch')
@@ -120,31 +102,56 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(length == 2)
     def test_cont_sort_term_fail(self):
         """sort fails?"""
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month_mm=10,day=10,hour=10,minute=10),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month=10,day=10,hour=10,minute=10),
            title='The latest post',url='http://foo.com/bar/foobar',year=2010,
            month=10,day=10, hour=10, minute=10)
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2012,month_mm=12,day=12,hour=12,minute=12),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2012,month=12,day=12,hour=12,minute=12),
            title='Hello world #2',url='http://foo.com',year=2012,month=12,
            day=12, hour=12, minute=12)
         data = self.c.sort('FOO')
         self.assertFalse(data)
     def test_cont_sort_no_term_fail(self):
         """sort fails?"""
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month_mm=10,day=10,hour=10,minute=10),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month=10,day=10,hour=10,minute=10),
            title='The latest post',url='http://foo.com/bar/foobar',year=2010,
            month=10,day=10, hour=10, minute=10)
-        self.c.add(epoch=dt_ymdhm2_epoch(year=2012,month_mm=12,day=12,hour=12,minute=12),
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2012,month=12,day=12,hour=12,minute=12),
            title='Hello world #2',url='http://foo.com',year=2012,month=12,
            day=12, hour=12, minute=12)
         data = self.c.sort('')
         self.assertFalse(data)
+    # add
     def test_cont_add_incompat_dicts(self):
         """test for incompatiable dictionaries added"""
         self.c.add(title='after berlin', album='Trans', year=1982, artist='neil young')
-        status = self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month_mm=10,day=10,hour=10,minute=10),
+        status = self.c.add(epoch=dt_ymdhm2_epoch(year=2010,month=10,day=10,hour=10,minute=10),
            title='The latest post',url='http://foo.com/bar/foobar',year=2010,
            month=10,day=10, hour=10, minute=10)
         self.assertFalse(status)
+    # all
+    def test_cont_all_ok(self):
+        """add N, return should return N items in list"""
+        # add 2
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2013,month=10,day=1,hour=0,minute=0),
+           title='Hello world #1',url='http://192.168.0.1',year=2013,month=4, 
+           day=1, hour=0,minute=0)
+        self.c.add(epoch=dt_ymdhm2_epoch(year=2013,month=10,day=23,hour=0,minute=0),
+           title='The latest post',url='http://foo.com/bar/foobar',year=2013,
+           month=10,day=23, hour=0, minute=0)
+        length = len(self.c.all())
+        self.assertEqual(length, 2)
+        self.assertTrue(self.c.all())
+    def test_cont_all_empty_ok(self):
+        """empty list, should be lenght zero"""
+        length = len(self.c.all())
+        self.assertEqual(length, 0)
+    # all: sort tests for Container
+    def test_cont_all_default(self):
+        pass
+    def test_cont_all_sort_ok(self):
+        pass
+    def test_cont_all_sort_fail(self):
+        pass
 
 
 #---
@@ -162,7 +169,10 @@ def suite():
              'test_cont_sort_order_reverse_ok',
              'test_cont_sort_term_fail',
              'test_cont_sort_no_term_fail',
-             'test_cont_add_incompat_dicts'
+             'test_cont_add_incompat_dicts',
+             'test_cont_all_default',
+             'test_cont_all_sort_ok',
+             'test_cont_all_sort_fail'
             ]
 
     return unittest.TestSuite(map(TestContainer, tests))

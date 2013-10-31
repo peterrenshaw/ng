@@ -49,8 +49,9 @@ class Nextgen:
                        container=Container()):
         """inject Date object, init variables"""
         # objects
-        self.date8601 = d8601    # 
-        self.link = container   # container for Index of dict to sort
+        self.date8601 = d8601   # 
+        self.pages = container  # Page object with post data
+                                # as container
 
         # paths
         self.source_dir = ""
@@ -65,8 +66,6 @@ class Nextgen:
   
         # dynamic
         self.post = []  # data from post
-        self.page = []  # Page object with post data
-        self.index = [] # link data from index object
         # --- end data source ---
     # extract
     def extract_content(self, yaml_count, data):
@@ -403,21 +402,6 @@ class Nextgen:
                             self.post.append(p)                            
                             # --- end build ---
 
-                            # TODO epoch and strf are from???
-                            # --- build dict of link index data ---
-                            self.link.add(title=title,
-                                          abstract=abstract,
-                                          filename=filename,
-                                          filepath=filepath,
-                                          relpath=relpath,
-                                          year=year,
-                                          month_mmm=month_mmm,
-                                          day=day,
-                                          dt_epoch=epoch,
-                                          hour=hour,
-                                          minute=minute)
-                            # --- end build
-
             # TODO problem here
             return True
         else:
@@ -448,7 +432,8 @@ class Nextgen:
                 tpl_header = self.read_partial('header.html')
                 tpl_footer = self.read_partial('footer.html')
                 tpl_content = self.read_partial('content.html')
-        
+
+                # fail, if we can't load headers
                 if not (tpl_header and tpl_footer and tpl_content):
                     print("templates are %s" % (tpl_header and 
                                                 tpl_footer and 
@@ -458,6 +443,7 @@ class Nextgen:
                     print("content is %s" % tpl_content)
                     return False
 
+                # 
                 for post in self.post:
                     # destination
                     self.dest_dir = destination_dir
@@ -495,6 +481,7 @@ class Nextgen:
                         print("month_mm is %s" % month_mm)
                         print("month_mmm is %s" % month_mmm)
                         print("month is %s" % month)
+                        print("post")
                         print("day is %s" % day)
                         print("hour is %s" % hour)
                         print("minute is %s" % minute)
@@ -531,7 +518,7 @@ class Nextgen:
 
                     # --- build pages ---
                     # page object
-                    page = ng.page.Page(is_index=True)
+                    page = ng.page.Page(is_index=False)
 
                     # templates
                     page.header(tpl_header)
@@ -574,24 +561,14 @@ class Nextgen:
                                    site_byline=self.site['byline'],
                                    is_index=True)
                     page.body(title=title,
-                               abstract=abstract,
-                               content=content,
-                               template=tpl_content)
-                    if False:
-                        print("=== TESTING ===")
-                        status = not ng.tools.dt_is_valid_input(year, month_mm, day, hour, minute)
-                        print("STATUS is %s" % status)
-                        print(year, month_mm, day, hour, minute)
-                        print("year is %s" % year)
-                        print("month_mm is %s" % month_mm)
-                        print("month_mmm is %s" % month_mmm)
-                        print("day is %s" % day)
-                        print("hour is %s" % hour)
-                        print("minute is %s" % minute)
+                              abstract=abstract,
+                              content=content,
+                              template=tpl_content)
 
+                    self.pages.add(dt_epoch=dt_epoch, page=page)
+                    page = None   
             return True    
         else:
-            print("post=<%s>" % self.post)
             return False
     def save(self):
         """save posts and index to file"""
@@ -633,7 +610,7 @@ class Nextgen:
         #         save file
         #    save index files
         #     
-        pass
+        return False
 #
 # --- end Nextgen object ---
 

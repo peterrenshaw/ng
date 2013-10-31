@@ -67,24 +67,11 @@ def main():
               
                     # process
                     process = ng.process(options.destination)
+                    print("process is %s" % process)
                     if process:
-                        print("process")
-                        print("index")
-                        for index in ng.index:
-                            #print("%s" % index.body_data)
-                            print("%s" % index.time_data)
-                            #print("%s" % index.file_data)
-                            #print("%s" % index.meta_data)
-                            print("\n")
-
-                        print("post")
-                        for link in ng.link.sort(term='dt_epoch'):
-                            print("%s\t%s: %s" % 
-                                    (link['dt_epoch'], link['title'], link['abstract'][:40]))
-
                         save = ng.save()
                         if save:
-                            print("save")
+                            print("save is %s" % save)
                             sys.exit(1)
     
     if not (options.source and options.destination and read and process and save):

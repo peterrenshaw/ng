@@ -81,8 +81,11 @@ class Container:
     def clear(self):
         """clears index list"""
         self.index = []
-    def all(self):
+    def all(self, is_sort=False, key='dt_epoch'):
         """all index data in list"""
+        if is_sort:
+            if key in self.index:
+                return self.sort(key)
         return self.index
 #
 # --- end container object --- 
