@@ -39,6 +39,8 @@ from ng.tools import DateIso8601
 # desc: hack an old, nextgeneration static blog
 #       engine in 8 hrs (no)
 # usge: 
+#            
+#
 #            ng = Nextgen()
 #            ng.source(<source directory>)
 #            ng.destination(<destination directory>)
@@ -371,7 +373,6 @@ class Nextgen:
                             filename = self.file_name(title)
                             filepath = os.path.join(str(year), month_mmm, str(day))
                             relpath = "%s/%s/%s" % (str(year), month_mmm, str(day))
-
                             # post content
                             yaml_count = len(self.yaml) if self.yaml else 0
                             c = self.extract_content(yaml_count, data)
@@ -496,29 +497,24 @@ class Nextgen:
                     filename = post['filename']
                     filepath = post['filepath']
                     relpath =  post['relpath']
-                    
-                    # --- directories ---
-                    path_yyyy = self.path_build([year])
-                    post['path_yyyy'] = path_yyyy
-                    
-                    path_yyyymm = self.path_build([year, month_mm])
-                    post['path_yyyymm'] = path_yyyymm
-
-                    path_yyyymmdd = self.path_build([year, month_mm, day])
-                    post['path_yyyymmdd'] = path_yyyymmdd
-
-                    path_yyyymmm = self.path_build([year, month_mmm])
-                    post['path_yyyymmm'] = path_yyyymmm
-
-                    path_yyyymmmdd = self.path_build([year, month_mmm, day])
-                    post['path_yyyymmmdd'] = path_yyyymmmdd
-                    post["postpath"] = path_yyyymmmdd
-                    #
-                    # --- end directories ---
 
                     # --- build pages ---
                     # page object
                     page = ng.page.Page(is_index=False)
+
+                    # --- directories ---
+                    path_yyyy = self.path_build([self.dest_dir, year])
+                    page.dirdata(path_yyyy)
+                    path_yyyymm = self.path_build([self.dest_dir, year, month_mm])
+                    page.dirdata(path_yyyymm)
+                    path_yyyymmdd = self.path_build([self.dest_dir, year, month_mm, day])
+                    page.dirdata(path_yyyymmdd)
+                    path_yyyymmm = self.path_build([self.dest_dir, year, month_mmm])
+                    page.dirdata(path_yyyymmm)
+                    path_yyyymmmdd = self.path_build([self.dest_dir, year, month_mmm, day])
+                    page.dirdata(path_yyyymmmdd)
+                    #
+                    # --- end directories ---
 
                     # templates
                     page.header(tpl_header)
@@ -547,10 +543,12 @@ class Nextgen:
                                    hour=hour,
                                    minute=minute,
                                    dt_strf=dt_strf)
+
                     page.filedata(basepath=self.dest_dir,
-                                   relpath=relpath,
-                                   name=filename, 
-                                   ext="html")
+                                  name=filename,
+                                  ext="html",
+                                  relpath=filepath)
+
                     tags=[self.site['author'].replace(" ","").lower(), 
                           self.site['name'].replace(" ","").lower(),
                           post['year'], post['month_mm'], post['day'], 
@@ -572,45 +570,16 @@ class Nextgen:
             return False
     def save(self):
         """save posts and index to file"""
-        # save index first
-        """if self.link.sort(term='dt_epoch'):
-            for link in self.link.all():
-                for key in link.keys():
-                    print("link %s='%s'" % (key, link[key]))
+        # render pages
+        if len(self.pages.all()) > 0:
+            for a in self.pages.sort(term="dt_epoch"):
+                for directory in a['page'].dir_data:
+                    self.create_directory(directory)
+                    a['page'].render()
+            return True
         else:
-            print("Error: link problems")
-            print("\tlink=%s" % self.link)
-        """
-        # for post in posts
-        #     build directory
-        #         build file
-        #file = dict(filename=filename,
-        #            ext=extension,
-        #            title=title,
-        #            abstract=description,
-        #            tags=[],
-        #            date=date,
-        #            path=path,
-        #            body=content)
-                    
-                    
-        #             filename + ext
-        #             summary from description
-        #             title
-        #             tags
-        #             path via year, month, day
-        #             time hour, minute
-        #             body
-        #             
-        #         build index
-        #             title
-        #             path
-        #             summary
-        #             date time
-        #         save file
-        #    save index files
-        #     
-        return False
+            return False
+
 #
 # --- end Nextgen object ---
 

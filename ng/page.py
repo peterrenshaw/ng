@@ -127,7 +127,10 @@ class Page:
                               relpath="",     # path relative to base
                               name="",        # filename
                               ext="",         # filename extension
-                              fullpath="")    # full filepath and filename.ext
+                              fullpath="")
+        # directory
+        self.dir_data = []                    # directories
+
         # time
         self.time_data = dict(dt_epoch="",    # epoch
                               year="",        # year YYYY
@@ -220,6 +223,13 @@ class Page:
             self.__footer = content
             return True
         return False
+    def dirdata(self, directory):
+        """build directory data"""
+        if not directory in self.dir_data:
+            self.dir_data.append(directory)
+            return True
+        else:
+            return False
     def filedata(self, basepath, name, ext, relpath=""):
         """
         build page filename from paths, name & ext. remember
@@ -231,11 +241,14 @@ class Page:
                     base = self.q_file('basepath', data=basepath, is_set=True)
                     name = self.q_file('name', data=name, is_set=True)
                     ext = self.q_file('ext', data=ext, is_set=True)
+
                     if relpath:  # optional
                         rel = self.q_file('relpath', data=relpath, is_set=True)
                         status = (base and rel and name and ext) 
                     else:
                         status = (base and name and ext)
+
+                    # basepath, filename and extension valid?
                     if status: 
                         self.filepath()
                         return True
@@ -253,12 +266,14 @@ class Page:
         if self.q_file('basepath'):
             if self.q_file('name') and self.q_file('ext'):
                 fn = "%s.%s" % (self.q_file('name'), self.q_file('ext'))
-                if self.q_file('filepath'):
+                fullpath = ""
+                if self.q_file('relpath'):
                     fullpath = os.path.join(self.q_file('basepath'),
-                                            self.q_file('filepath'), fn)
+                                       self.q_file('relpath'), fn)
                 else:
                     fullpath = os.path.join(self.q_file('basepath'), fn)
                 return self.q_file('fullpath', data=fullpath, is_set=True)
+
         return False
     def imagedata(self, source, url, height=375, width=500):
         """collect image data for main image, default HxW"""

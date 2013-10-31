@@ -72,6 +72,7 @@ def main():
                         save = ng.save()
                         if save:
                             print("save is %s" % save)
+                            print("ok")
                             sys.exit(1)
     
     if not (options.source and options.destination and read and process and save):
