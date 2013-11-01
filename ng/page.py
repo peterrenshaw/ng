@@ -149,6 +149,7 @@ class Page:
         self.meta_data = dict(author="",              # author name
                               site_name="",           # name of site
                               site_byline="",         # site tag line
+                              site_domain="",         # site domain name
                               prod_name="",           # name of product
                               prod_version="",        # product version no
                               tags=[],                # tags per Page
@@ -164,8 +165,9 @@ class Page:
         # --- mapping --- 
         # header
         self.header_map = dict(author="",
-                               site="",
+                               site_name="",
                                site_byline="",
+                               site_domain="",
                                title="",
                                abstract="", 
                                year="",
@@ -177,8 +179,10 @@ class Page:
                                version="")
         # body
         self.body_map = dict(title="",
-                             site="",
-                             abstract="", 
+                             site_name="",
+                             site_byline="",         # site tag line
+                             author="",
+                             abstract="",
                              description="",
                              body="",
                              year="",
@@ -191,6 +195,9 @@ class Page:
                              img_height="",
                              img_width="",
                              dt_strf="")
+        # footer
+        self.footer_map = dict(respath="")
+
         # index
         self.index_map = dict(title="",
                               abstract="",
@@ -305,6 +312,7 @@ class Page:
         """
         for arg in kwargs:
             if arg in self.meta_data.keys():
+                print("arg=<%s>" % arg)
                 status = self.q_meta(key=arg, data=kwargs[arg], is_set=True)
                 if not status: 
                     return False
@@ -405,9 +413,14 @@ class Page:
         """
         # remember: the dict keys are related to <header.html> 
         #           key holders in the template
+        print("0 site_name=<%s>" % self.q_meta('site_name'))
+        print("0 site_byline=<%s>" % self.q_meta('site_byline'))
+        print("0 site_domain=<%s>" % self.q_meta('site_domain'))
+
         header_map = dict(author=self.q_meta('author'),
-                          site=self.q_meta('site_name'),
+                          site_name=self.q_meta('site_name'),
                           site_byline=self.q_meta('site_byline'),
+                          site_domain=self.q_meta('site_domain'),
                           respath=self.q_file('respath'), 
                           title=self.q_body('title'),
                           abstract=self.q_body('abstract'), 
@@ -426,8 +439,13 @@ class Page:
         """
         # remember: the dict keys are related to <content.html> 
         #           key holders in the template
+        print("1 site_name=<%s>" % self.q_meta('site_name'))
+        print("1 site_byline=<%s>" % self.q_meta('site_byline'))
+
         body_map = dict(title=self.q_body('title'),
+                        author=self.q_body('author'),
                         site_name=self.q_meta('site_name'),
+                        site_byline=self.q_meta('site_byline'),
                         abstract=self.q_body('abstract'), 
                         description=self.q_body('description'),
                         body=self.q_body('body'),
@@ -447,7 +465,11 @@ class Page:
         body = self.build_template(self.q_body('template'), body_map)
         return body
     def render_footer(self):
-        footer = "%s" % self.__footer
+        """
+        given footer data and template, substitute data for placeholders
+        """
+        footer_map = dict(respath=self.q_file('respath'))
+        footer = self.build_template(self.__footer, footer_map)
         return footer
     # all
     def render(self):
@@ -465,8 +487,10 @@ class Page:
                     f.write(line)
                     f.write("\n")
                 # footer
-                if footer:
-                    f.write(footer)
+                for line in footer:
+                    f.write(line)
+                    f.write("\n")
+
             f.close()
         except:
             header = ""

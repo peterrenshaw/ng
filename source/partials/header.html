@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>$title</title>
+    <title>$site_name &raquo; $title</title>
     <!-- meta -->
     <meta name="description" content="$abstract">
     <meta name="author" content="$author">
     <!-- end meta -->
     <!-- open graph: http://ogp.me/ -->
-    <meta property="og:title" content="$site">
+    <meta property="og:title" content="$site_name">
     <meta property="og:description" content="$abstract">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="">
+    <meta property="og:url" content="http://$site_domain">
     <meta property="og:image" content="">
-    <meta property="og:site_name" content="$site">
+    <meta property="og:site_name" content="$site_name">
     <!-- end open graph -->
     <!-- style -->
     <link rel="stylesheet" type="text/css" href="$respath/css/new.css"/>
@@ -24,8 +24,8 @@
      <!-- title -->
      <div id="header">
          <div id="top">
-             <h1 id="title"><a href="/" title="home">$site</a></h1>
-             <div id="byline"><em>"...$site_byline..."</em></div>
+             <h1 id="title"><a href="/" title="home">$site_name</a></h1>
+             <div id="byline">$site_byline</em></div>
          </div>
      </div>
      <!-- title -->

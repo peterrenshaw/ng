@@ -70,6 +70,15 @@ class Nextgen:
         self.post = []  # data from post
         # --- end data source ---
     # extract
+    def extract_site(self):
+        """
+        TODO should be as config file & populated via 
+        method, otherwise just store
+        """
+        return dict(author = "Peter Renshaw", 
+                    site_name = "Seldom logical",
+                    site_byline = "new ideas, ideal solutions are seldom logical. attaining a desired goal always is",
+                    site_domain = "seldomlogical.com")
     def extract_content(self, yaml_count, data):
         """
         given end of yaml, line number, count until end, 
@@ -265,16 +274,6 @@ class Nextgen:
                 data = ""
                 index_data = [] # build list of index data
                 
-                # TODO should be as config file & populated via 
-                #      method, otherwise just store 
-                self.site = dict(author = "Peter Renshaw", 
-                                 name   = "Seldomlogical",
-                                 byline = "new ideas, ideal \
-                                           solutions are seldom\
-                                           logical. attaining \
-                                           a desired goal \
-                                           always is")
-                
                 # we have the filename, now the contents
                 for fpn in self.filepaths:
                     data = self.read_file_content(fpn)
@@ -373,7 +372,7 @@ class Nextgen:
                             filename = self.file_name(title)
                             filepath = os.path.join(str(year), month_mmm, str(day))
                             relpath = "%s/%s/%s" % (str(year), month_mmm, str(day))
-                            #rootpath = "..\..\.."
+
                             # post content
                             yaml_count = len(self.yaml) if self.yaml else 0
                             c = self.extract_content(yaml_count, data)
@@ -382,7 +381,6 @@ class Nextgen:
                                  basepath="",              # destination path
                                  filepath=filepath,        # filepath of post
                                  relpath=relpath,          # path from basepath
-                                 #rootpath=rootpath,        # path back to root
                                  filename=filename,        # filename
                                  datetime=dt,              # empty at moment, 
                                                            # strf formatted datetime
@@ -445,20 +443,24 @@ class Nextgen:
                     print("footer is %s" % tpl_footer)
                     print("content is %s" % tpl_content)
                     return False
-
                 # 
                 for post in self.post:
                     # destination
                     self.dest_dir = destination_dir
 
+                    # --- site ---
+                    self.site = self.extract_site()
+
                     # --- process markdown ---
                     if post['markdown']:
                         if post['content']:
+                            # markdown processed
                             md = markdown2.markdown(post['content'])
-                            post['content_processed'] = md # process markdown
+                            post['content_processed'] = md
                         else:
-                            post['content_processed'] = post['content']
+                           post['content_processed'] = post['content']
                     else:
+                        # raw, as is. could be text, html etc.
                         post['content_processed'] = post['content']
 
 
@@ -537,14 +539,14 @@ class Nextgen:
                                                       hour=hour,
                                                       minute=minute)
                     page.timedata(dt_epoch=dt_epoch,
-                                   year=year,
-                                   month_mm=month_mm,
-                                   month_mmm=month_mmm,
-                                   month=month,
-                                   day=day,
-                                   hour=hour,
-                                   minute=minute,
-                                   dt_strf=dt_strf)
+                                  year=year,
+                                  month_mm=month_mm,
+                                  month_mmm=month_mmm,
+                                  month=month,
+                                  day=day,
+                                  hour=hour,
+                                  minute=minute,
+                                  dt_strf=dt_strf)
 
                     page.filedata(basepath=self.dest_dir,
                                   name=filename,
@@ -552,14 +554,23 @@ class Nextgen:
                                   relpath=filepath)
 
                     tags=[self.site['author'].replace(" ","").lower(), 
-                          self.site['name'].replace(" ","").lower(),
+                          self.site['site_name'].replace(" ","").lower(),
+                          self.site['site_domain'].replace(" ","").lower(),
                           post['year'], post['month_mm'], post['day'], 
                           post['hour'], post['minute']]
+
                     page.metadata(tags=tags,
-                                   author=self.site['author'],
-                                   site_name=self.site['name'],
-                                   site_byline=self.site['byline'],
-                                   is_index=True)
+                                  author=self.site['author'],
+                                  site_name=self.site['site_name'],
+                                  site_byline=self.site['site_byline'],
+                                  site_domain=self.site['site_domain'],
+                                  is_index=False)
+                    print("page.metadata=<%s>" % page.metadata())
+                    print("self.site=<%s>" % (self.site))
+                    print("self.site['site_name']=<%s>" % (self.site['site_name']))
+                    print("self.site['site_byline']=<%s>" % (self.site['site_byline']))
+                    print("self.site['site_domain']=<%s>" % (self.site['site_domain']))
+
 
                     page.body(title=title,
                               abstract=abstract,
