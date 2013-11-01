@@ -373,6 +373,7 @@ class Nextgen:
                             filename = self.file_name(title)
                             filepath = os.path.join(str(year), month_mmm, str(day))
                             relpath = "%s/%s/%s" % (str(year), month_mmm, str(day))
+                            #rootpath = "..\..\.."
                             # post content
                             yaml_count = len(self.yaml) if self.yaml else 0
                             c = self.extract_content(yaml_count, data)
@@ -380,7 +381,8 @@ class Nextgen:
                             p = dict(content=c,            # body of post
                                  basepath="",              # destination path
                                  filepath=filepath,        # filepath of post
-                                 relpath=relpath,
+                                 relpath=relpath,          # path from basepath
+                                 #rootpath=rootpath,        # path back to root
                                  filename=filename,        # filename
                                  datetime=dt,              # empty at moment, 
                                                            # strf formatted datetime
@@ -558,6 +560,7 @@ class Nextgen:
                                    site_name=self.site['name'],
                                    site_byline=self.site['byline'],
                                    is_index=True)
+
                     page.body(title=title,
                               abstract=abstract,
                               content=content,

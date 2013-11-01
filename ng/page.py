@@ -125,9 +125,10 @@ class Page:
         # file
         self.file_data = dict(basepath="",    # root path 
                               relpath="",     # path relative to base
+                              fullpath="",    # full path to file
+                              respath="",     # path to resources
                               name="",        # filename
-                              ext="",         # filename extension
-                              fullpath="")
+                              ext="")         # filename extension
         # directory
         self.dir_data = []                    # directories
 
@@ -168,6 +169,7 @@ class Page:
                                month_mmm="",
                                month_mm="",
                                day="",
+                               respath="",       # resources path
                                tool="",
                                version="")
         # body
@@ -272,6 +274,7 @@ class Page:
                                        self.q_file('relpath'), fn)
                 else:
                     fullpath = os.path.join(self.q_file('basepath'), fn)
+                print("fullpath=<%s>" % fullpath)
                 return self.q_file('fullpath', data=fullpath, is_set=True)
 
         return False
