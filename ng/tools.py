@@ -228,6 +228,34 @@ def remove_char(value, replacement=""):
     return False
 # --- end string tools ---
 
+# --- start path tools ---
+def build_respath(path, bw="..", is_web=True):
+    """
+    build the resource path back to root from existing
+    path and return resource path data or F
+    """
+    # check for os.path.altsep in path & die
+    # as it gives unpredictable result
+    if not path.count(os.path.altsep) > 0:
+        if path: 
+            if is_web:
+                sep = "/"
+            else: 
+                sep = os.path.sep
+
+            resdata = ""
+            # because counting b/w path
+            count = path.count(os.path.sep) + 1
+            for c in range(0, count):
+                resdata = "%s%s%s" % (resdata, bw, sep)
+            if is_web:
+                if count > 1:
+                    resdata = resdata[:-1]
+            return resdata
+    return False
+# --- end path tools ---
+
+
 # main entry point
 def main():
     pass

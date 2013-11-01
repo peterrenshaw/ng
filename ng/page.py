@@ -16,6 +16,9 @@ import time
 from string import Template
 
 
+import ng.tools # build_respath
+
+
 # ---- Container object ---
 #
 
@@ -126,7 +129,7 @@ class Page:
         self.file_data = dict(basepath="",    # root path 
                               relpath="",     # path relative to base
                               fullpath="",    # full path to file
-                              respath="",     # path to resources
+                              respath="",     # reverse path to resources
                               name="",        # filename
                               ext="")         # filename extension
         # directory
@@ -179,6 +182,7 @@ class Page:
                              description="",
                              body="",
                              year="",
+                             respath="",        # resources path
                              month_mmm="",
                              month_mm="",
                              day="", 
@@ -243,10 +247,10 @@ class Page:
                     base = self.q_file('basepath', data=basepath, is_set=True)
                     name = self.q_file('name', data=name, is_set=True)
                     ext = self.q_file('ext', data=ext, is_set=True)
-
+                    
                     if relpath:  # optional
                         rel = self.q_file('relpath', data=relpath, is_set=True)
-                        status = (base and rel and name and ext) 
+                        status = (base and rel and name and ext)
                     else:
                         status = (base and name and ext)
 
@@ -269,13 +273,17 @@ class Page:
             if self.q_file('name') and self.q_file('ext'):
                 fn = "%s.%s" % (self.q_file('name'), self.q_file('ext'))
                 fullpath = ""
-                if self.q_file('relpath'):
-                    fullpath = os.path.join(self.q_file('basepath'),
-                                       self.q_file('relpath'), fn)
+                relpath = self.q_file('relpath')
+                if relpath:
+                    fullpath = os.path.join(self.q_file('basepath'), relpath, fn)
                 else:
                     fullpath = os.path.join(self.q_file('basepath'), fn)
-                print("fullpath=<%s>" % fullpath)
-                return self.q_file('fullpath', data=fullpath, is_set=True)
+                respath = ng.tools.build_respath(self.q_file('relpath')) 
+
+                res =  self.q_file('respath', data=respath, is_set=True)
+                full = self.q_file('fullpath', data=fullpath, is_set=True)
+
+                return (res and full)
 
         return False
     def imagedata(self, source, url, height=375, width=500):
@@ -400,6 +408,7 @@ class Page:
         header_map = dict(author=self.q_meta('author'),
                           site=self.q_meta('site_name'),
                           site_byline=self.q_meta('site_byline'),
+                          respath=self.q_file('respath'), 
                           title=self.q_body('title'),
                           abstract=self.q_body('abstract'), 
                           year=self.q_time('year'),
@@ -423,6 +432,7 @@ class Page:
                         description=self.q_body('description'),
                         body=self.q_body('body'),
                         year=self.q_time('year'),
+                        respath=self.q_file('respath'), 
                         month_mmm=self.q_time('month_mmm'),
                         month_mm=self.q_time('month_mm'),
                         day=self.q_time('day'), 
