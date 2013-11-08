@@ -68,6 +68,7 @@ class Nextgen:
   
         # dynamic
         self.post = []  # data from post
+
         # --- end data source ---
     # extract
     def extract_site(self):
@@ -75,10 +76,7 @@ class Nextgen:
         TODO should be as config file & populated via 
         method, otherwise just store
         """
-        return dict(author = "Peter Renshaw", 
-                    site_name = "Seldom logical",
-                    site_byline = "new ideas, ideal solutions are seldom logical. attaining a desired goal always is",
-                    site_domain = "seldomlogical.com")
+        pass
     def extract_content(self, yaml_count, data):
         """
         given end of yaml, line number, count until end, 
@@ -167,42 +165,6 @@ class Nextgen:
             if item not in tags:    # no dupes
                 tags.append(item)
         return tags
-    # directories
-    def is_dir_valid(self, file_dir):
-        """valid directory or F"""
-        if file_dir:
-            if os.path.isdir(file_dir):
-                    return file_dir
-        return False
-    def destination(self, file_dir=""):
-        """valid destination directory or F"""
-        fdp = self.is_dir_valid(file_dir)
-        if fdp: 
-            self.dest_dir = fdp
-            return True
-        else:
-            return False
-    def directory(self, path, is_create):
-        """create or delete directory path"""
-        if is_create:
-            if not os.path.isdir(path):
-                os.mkdir(path)
-                return True
-            else:
-                return False
-        else:
-            if os.path.isdir(path):
-                # DANGER Will Robinson, DANGER
-                shutil.rmtree(path)
-                return True
-            else:
-                return False
-    def create_directory(self, path):
-        """create destination directory or F"""
-        return self.directory(path, True)
-    def remove_directory(self, path):
-        """remove directory & everything below it"""
-        return self.directory(path, False)
     # file paths
     def path_build(self, lst_paths):
         """build a path from list of path fragments"""
@@ -265,7 +227,7 @@ class Nextgen:
     def read(self, file_dir=""):
         """read source directory & slurp up filenames"""
         # slurp files, build 'file directory + path + glob.ext'
-        if self.is_dir_valid(file_dir):
+        if os.path.isdir(file_dir):
             self.source_dir = file_dir        # valid, save for later
             self.filepath = []                # init filepath storage
             self.filepaths = self.read_file_names(self.source_dir)
@@ -325,23 +287,6 @@ class Nextgen:
                                     #date = self.date8601.now()
                                     #print("2 date=<%s>" % date)
 
-
-                        # --- build list of file data --- 
-                        # yaml date found?
-                        # TODO add yyyy yyyymm yyyymmm yyyymmdd yyyymmmdd
-                        #      add epoch to allow sorting by datetime
-                        
-                        # IF NO DT FOUND THIS WILL CRASH
-                        # if there's no yaml datetime, 
-                        # datetime information can come from?
-                        #     - filename
-                        #     - file system timestamp
-                        #     - current datetime
-                        # scenario:
-                        #     * blog entry
-                        #     - use datetime for paths
-                        #     * static page  
-                        #     - off root page
                         dt = self.extract_yaml_date(date)
                         if not dt:
                             print("Error: datetime problem in nextgen.read")
@@ -377,7 +322,14 @@ class Nextgen:
                             yaml_count = len(self.yaml) if self.yaml else 0
                             c = self.extract_content(yaml_count, data)
                             # --- build dict of post data ---
-                            p = dict(content=c,            # body of post
+                            p = dict(
+                                 author = "Peter Renshaw",
+                                 site_name = "Seldom Logical",
+                                 site_byline = "new ideas, ideal solutions are seldom logical. attaining a desired goal always is",
+                                 site_domain = "seldomlogical.com",
+                                 prod_name = "nextgen",
+                                 prod_version = "0.1",
+                                 content=c,            # body of post
                                  basepath="",              # destination path
                                  filepath=filepath,        # filepath of post
                                  relpath=relpath,          # path from basepath
@@ -449,7 +401,7 @@ class Nextgen:
                     self.dest_dir = destination_dir
 
                     # --- site ---
-                    self.site = self.extract_site()
+                    # define here
 
                     # --- process markdown ---
                     if post['markdown']:
@@ -495,7 +447,7 @@ class Nextgen:
                     # --- body ---
                     title = post['title']
                     abstract = post['abstract']
-                    content = post['content_processed']          
+                    content = post['content_processed']
 
                     # --- paths ---
                     filename = post['filename']
@@ -553,24 +505,34 @@ class Nextgen:
                                   ext="html",
                                   relpath=filepath)
 
-                    tags=[self.site['author'].replace(" ","").lower(), 
-                          self.site['site_name'].replace(" ","").lower(),
-                          self.site['site_domain'].replace(" ","").lower(),
+                    site_author = post['author']
+                    site_name = post['site_name']
+                    site_domain = post['site_domain']
+                    site_byline = post['site_byline']
+                    #print("site_author=<%s>" % site_author)
+                    #print("site_name=<%s>" % site_name)
+                    #print("site_domain=<%s>" % site_domain)
+                    #print("site_byline=<%s>" % site_byline)
+
+                    prod_name = post['prod_name']
+                    prod_version = post['prod_version']
+                    #print("prod_name=<%s>" % prod_name)
+                    #print("prod_version=<%s>" % prod_version)
+
+                    tags=[site_author.replace(" ","").lower(), 
+                          site_name.replace(" ","").lower(),
+                          site_domain.replace(" ","").lower(),
                           post['year'], post['month_mm'], post['day'], 
                           post['hour'], post['minute']]
 
                     page.metadata(tags=tags,
-                                  author=self.site['author'],
-                                  site_name=self.site['site_name'],
-                                  site_byline=self.site['site_byline'],
-                                  site_domain=self.site['site_domain'],
+                                  prod_name=prod_name,
+                                  prod_version=prod_version,
+                                  author=site_author,
+                                  site_name=site_name,
+                                  site_byline=site_byline,
+                                  site_domain=site_domain,
                                   is_index=False)
-                    print("page.metadata=<%s>" % page.metadata())
-                    print("self.site=<%s>" % (self.site))
-                    print("self.site['site_name']=<%s>" % (self.site['site_name']))
-                    print("self.site['site_byline']=<%s>" % (self.site['site_byline']))
-                    print("self.site['site_domain']=<%s>" % (self.site['site_domain']))
-
 
                     page.body(title=title,
                               abstract=abstract,
@@ -588,8 +550,8 @@ class Nextgen:
         if len(self.pages.all()) > 0:
             for a in self.pages.sort(term="dt_epoch"):
                 for directory in a['page'].dir_data:
-                    self.create_directory(directory)
-                    a['page'].render()
+                    if not a['page'].render():    # only then, render
+                        return False
             return True
         else:
             return False

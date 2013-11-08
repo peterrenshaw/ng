@@ -108,8 +108,6 @@ class Page:
         """initialise the Page"""
         self.is_index = (True if is_index else False)
         self.index = []             # list of index data for rendering
-        self.prod_name = "nextgen"  # pass in
-        self.prod_version = "0.1"   # pass in
 
         # basic page
         self.__header = ""     # template
@@ -128,7 +126,8 @@ class Page:
         # file
         self.file_data = dict(basepath="",    # root path 
                               relpath="",     # path relative to base
-                              fullpath="",    # full path to file
+                              path="",        # path to file
+                              fullpath="",    # full path and file name
                               respath="",     # reverse path to resources
                               name="",        # filename
                               ext="")         # filename extension
@@ -150,8 +149,8 @@ class Page:
                               site_name="",           # name of site
                               site_byline="",         # site tag line
                               site_domain="",         # site domain name
-                              prod_name="",           # name of product
-                              prod_version="",        # product version no
+                              prod_name="",    # name of product
+                              prod_version="",     # product version no
                               tags=[],                # tags per Page
                               is_index=self.is_index) # is this an index?
         # image
@@ -175,12 +174,12 @@ class Page:
                                month_mm="",
                                day="",
                                respath="",       # resources path
-                               tool="",
-                               version="")
+                               prod_version="",
+                               prod_name="")
         # body
         self.body_map = dict(title="",
                              site_name="",
-                             site_byline="",         # site tag line
+                             site_byline="",     # site tag line
                              author="",
                              abstract="",
                              description="",
@@ -279,18 +278,24 @@ class Page:
         if self.q_file('basepath'):
             if self.q_file('name') and self.q_file('ext'):
                 fn = "%s.%s" % (self.q_file('name'), self.q_file('ext'))
+
+                path = ""
                 fullpath = ""
                 relpath = self.q_file('relpath')
                 if relpath:
                     fullpath = os.path.join(self.q_file('basepath'), relpath, fn)
+                    path = os.path.join(self.q_file('basepath'), relpath)
                 else:
                     fullpath = os.path.join(self.q_file('basepath'), fn)
-                respath = ng.tools.build_respath(self.q_file('relpath')) 
+                    path = self.q_file('basepath')
+
+                respath = ng.tools.build_respath(self.q_file('relpath'))
 
                 res =  self.q_file('respath', data=respath, is_set=True)
                 full = self.q_file('fullpath', data=fullpath, is_set=True)
+                path = self.q_file('path', data=path, is_set=True)
 
-                return (res and full)
+                return (res and full and path)
 
         return False
     def imagedata(self, source, url, height=375, width=500):
@@ -311,8 +316,8 @@ class Page:
         true, assign data to key if not empty
         """
         for arg in kwargs:
+            #print("arg=<%s>" % kwargs[arg])
             if arg in self.meta_data.keys():
-                print("arg=<%s>" % arg)
                 status = self.q_meta(key=arg, data=kwargs[arg], is_set=True)
                 if not status: 
                     return False
@@ -387,6 +392,46 @@ class Page:
         return self.marshall('time', key, data, is_set)
     # --- end get data ---
     
+    # --- directories ---
+    #
+    def is_dir_valid(self, file_dir):
+        """valid directory or F"""
+        if file_dir:
+            if os.path.isdir(file_dir):
+                    return file_dir
+        return False
+    def destination(self, file_dir=""):
+        """valid destination directory or F"""
+        fdp = self.is_dir_valid(file_dir)
+        if fdp: 
+            self.dest_dir = fdp
+            return True
+        else:
+            return False
+    def directory(self, path, is_create):
+        """create or delete directory path"""
+        if is_create:
+            if not os.path.isdir(path):
+                os.makedirs(path)
+                return True
+            else:
+                return False
+        else:
+            if os.path.isdir(path):
+                # DANGER Will Robinson, DANGER
+                shutil.rmtree(path)
+                return True
+            else:
+                return False
+    def create_directory(self, path):
+        """create destination directory or F"""
+        return self.directory(path, True)
+    def remove_directory(self, path):
+        """remove directory & everything below it"""
+        return self.directory(path, False)
+    #
+    # --- end directories ---
+
     # --- render ---
     #
     # template
@@ -406,6 +451,16 @@ class Page:
                 return data_rendered
         return False
     # --- render ---
+    def is_valid_map(self, data):
+        if data:
+            #print("is_valid_map data=<%s>" % data)
+            for key in data.keys():
+                if not data[key]:
+                    return False
+                #data = "%s" % data[key]
+                #print("key=<%s> data='%s'" % (key, data[:20]))
+            return True
+        return False
     # page
     def render_header(self):
         """
@@ -413,34 +468,29 @@ class Page:
         """
         # remember: the dict keys are related to <header.html> 
         #           key holders in the template
-        print("0 site_name=<%s>" % self.q_meta('site_name'))
-        print("0 site_byline=<%s>" % self.q_meta('site_byline'))
-        print("0 site_domain=<%s>" % self.q_meta('site_domain'))
 
         header_map = dict(author=self.q_meta('author'),
                           site_name=self.q_meta('site_name'),
                           site_byline=self.q_meta('site_byline'),
                           site_domain=self.q_meta('site_domain'),
                           respath=self.q_file('respath'), 
-                          title=self.q_body('title'),
+                          title=self.q_body('title'),   
                           abstract=self.q_body('abstract'), 
                           year=self.q_time('year'),
                           month_mmm=self.q_time('month_mmm'),
                           month_mm=self.q_time('month_mm'),
                           day=self.q_time('day'),
-                          tool=self.q_meta('tool'),
-                          version=self.q_meta('version'))
-
-        header = self.build_template(self.__header, header_map)
-        return header
+                          prod_version=self.q_meta('prod_version'),
+                          prod_name=self.q_meta('prod_name'))
+        #if self.is_valid_map(header_map):
+        return self.build_template(self.__header, header_map)
+        #return False
     def render_body(self):
         """
         given data and template, substitute data for placeholders
         """
         # remember: the dict keys are related to <content.html> 
         #           key holders in the template
-        print("1 site_name=<%s>" % self.q_meta('site_name'))
-        print("1 site_byline=<%s>" % self.q_meta('site_byline'))
 
         body_map = dict(title=self.q_body('title'),
                         author=self.q_body('author'),
@@ -462,43 +512,58 @@ class Page:
 
         # grab the template, pass in the map, spit out the 
         # final body content
-        body = self.build_template(self.q_body('template'), body_map)
-        return body
+        #if self.is_valid_map(body_map):
+        return self.build_template(self.q_body('template'), body_map)
+        #else:
+        #    return False
     def render_footer(self):
         """
         given footer data and template, substitute data for placeholders
         """
         footer_map = dict(respath=self.q_file('respath'))
-        footer = self.build_template(self.__footer, footer_map)
-        return footer
+        if self.is_valid_map(footer_map):
+            return  self.build_template(self.__footer, footer_map)
+        else:
+            return False
     # all
     def render(self):
-        header = self.render_header()
-        body = self.render_body()
-        footer = self.render_footer()
-        try:
-            with open(self.q_file('fullpath'),'wt') as f:
-                # header
+        # create directory
+        path = self.q_file('path')
+        #print("nextgen.render file path=<%s>" % path)
+        status = self.create_directory(path)
+        #print("render path <%s> is %s" % (os.path.isdir(path), status))
+
+        # save file to newly created/existing directory
+        with open(self.q_file('fullpath'),'w') as f:
+            # render
+            header = self.render_header()
+            body = self.render_body()
+            footer = self.render_footer()
+
+            status = (header and body and footer)  # T/F
+            print("nextgen.render status=<%s>" % status)
+            if status:
+                    # header
                 for line in header:
                     f.write(line)
                     f.write("\n")
-                # body
+                    # body
                 for line in body:
                     f.write(line)
                     f.write("\n")
-                # footer
+                    # footer
                 for line in footer:
                     f.write(line)
                     f.write("\n")
-
             f.close()
-        except:
-            header = ""
-            body = ""
-            footer = ""
-            return False
-        else:
-            return True
+            return status
+        #except:
+        #    header = ""
+        #    body = ""
+        #    footer = ""
+        #    return False
+        #else:
+        #return True
     # --- end render
 #
 # --- end Page object ---
